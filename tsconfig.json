@@ -1,0 +1,14 @@
+{
+    "compilerOptions": {
+        "module": "ESNext",
+        "target": "ESNext",
+        "moduleResolution": "bundler",
+
+        "allowSyntheticDefaultImports": true,
+        "strictNullChecks": true,
+        "noImplicitThis": true,
+        "preserveValueImports": false,
+        "removeComments": false
+
+    }
+}
