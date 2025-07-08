@@ -1,4 +1,4 @@
-import {getPromise} from "./get-promise";
+import {getPromise} from "../utils/get-promise";
 
 enum ReactionType {
     Once,
@@ -10,9 +10,8 @@ type IDependencyStreamConfig = {
 }
 
 export class DependencyStream<T> {
-    private abortKey = Symbol('abort');
     private promise: undefined | ReturnType<typeof getPromise<T>>;
-    private abortPromise = getPromise<typeof this.abortKey>();
+    private abortPromise = getPromise<undefined>();
 
     constructor(private _value: T) {
 
@@ -34,12 +33,10 @@ export class DependencyStream<T> {
 
     private [Symbol.asyncIterator](conf: IDependencyStreamConfig) {
         const totalDispose = this.abortPromise;
-        const selfDispose = getPromise<typeof this.abortKey>();
+        const selfDispose = getPromise<undefined>();
         const obj = {
             owner: this,
-            dispose: () => {
-                selfDispose.resolve(this.abortKey)
-            },
+            dispose: () => selfDispose.resolve(undefined),
             next: async () => {
                 if (!this.promise) {
                     this.promise = getPromise();
@@ -88,31 +85,8 @@ export class DependencyStream<T> {
     }
 
     dispose() {
-        this.abortPromise.resolve(this.abortKey);
+        this.abortPromise.resolve(undefined);
         this.abortPromise = getPromise();
-    }
-
-    static any(...deps: DependencyStream<any>[]) {
-        const streams = deps.map((dep) => dep.stream()[Symbol.asyncIterator]());
-        let disposed = false;
-        return {
-            dispose: () => {
-              streams.map(s => s.dispose());
-              disposed = true;
-            },
-            [Symbol.asyncIterator]() {
-                return {
-                    next: async () => {
-
-                        await Promise.any(streams.map(s => s.next()));
-                        if (disposed) {
-                            return {done: true};
-                        }
-                        return {done: false, value: streams.map(s => s.owner.get())};
-                    }
-                }
-            }
-        };
     }
 }
 

@@ -1,10 +1,10 @@
-import {DependencyStream} from "./dependency-stream";
+import {DependencyStream} from "../core/dependency-stream";
 import {Dispatch, SetStateAction, useEffect, useState} from "react";
 
 class StreamController {
     setValue?: Dispatch<SetStateAction<any>>
     streams: DependencyStream<any>[];
-    iterator: ReturnType<typeof DependencyStream.any>
+    iterator: ReturnType<typeof anyStream>
 
     constructor(...streams: DependencyStream<any>[]) {
         this.streams = streams;
@@ -12,7 +12,7 @@ class StreamController {
     }
 
     async init() {
-        this.iterator = DependencyStream.any(...this.streams);
+        this.iterator = anyStream(...this.streams);
         for await (let chunk of this.iterator) {
             console.log(chunk);
             this.setValue?.(chunk);

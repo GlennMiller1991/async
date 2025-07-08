@@ -1,14 +1,10 @@
+// @formatter:off
 {
-    "compilerOptions": {
-        "module": "ESNext",
-        "target": "ESNext",
-        "moduleResolution": "bundler",
-
-        "allowSyntheticDefaultImports": true,
-        "strictNullChecks": true,
-        "noImplicitThis": true,
-        "preserveValueImports": false,
-        "removeComments": false
-
-    }
+  "extends": "tsconfig.base.json",
+  "compilerOptions": {
+    "module": "CommonJS",
+    "target": "ESNext",
+    "moduleResolution": "Node16",
+  }
 }
+// @formatter:on

@@ -1,0 +1,27 @@
+// @formatter:off
+{
+  "compilerOptions": {
+
+    // syntax
+    "allowSyntheticDefaultImports": true,
+    "noImplicitThis": true,
+    "noImplicitReturns": true,
+    "noImplicitOverride": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "strictBindCallApply": true,
+    "strictBuiltinIteratorReturn": true,
+    "strictFunctionTypes": true,
+    "strictPropertyInitialization": true,
+
+    // emit
+    "noEmitOnError": true,
+    "removeComments": false,
+    "outDir": "dist/bin",
+    "declaration": true,
+    "declarationDir": "dist/types",
+    "declarationMap": true,
+    "sourceMap": false
+  }
+}
+// @formatter:on
