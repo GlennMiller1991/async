@@ -4,11 +4,18 @@
   "description": "R&D async tools",
   "type": "module",
   "scripts": {
+    "clearDist": "rm dist -rf || true",
+    "clearModules": "rm node_modules -rf || true",
+    "clearAll": "npm run clearDist && npm run clearModules",
+    "build": "npm run clearAll && mkdir dist && tsc",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
     "typescript": "^5.8.3"
+  },
+  "dependencies": {
+    "react": "^19.1.0"
   }
 }

@@ -1,4 +1,6 @@
-function anyStream(...deps: DependencyStream<any>[]) {
+import {DependencyStream} from "./dependency-stream.js";
+
+export function anyStream(...deps: DependencyStream<any>[]) {
     const streams = deps.map((dep) => dep.stream()[Symbol.asyncIterator]());
     let disposed = false;
     return {

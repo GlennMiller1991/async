@@ -1,4 +1,4 @@
-import {getPromise} from "../utils/get-promise";
+import {getPromise} from "../utils/index.js";
 
 enum ReactionType {
     Once,
@@ -67,7 +67,7 @@ export class DependencyStream<T> {
         return obj;
     }
 
-    stream() {
+    stream(this: DependencyStream<T>) {
         const iterator = this[Symbol.asyncIterator]({type: ReactionType.Always});
         return {
             owner: this,
@@ -76,7 +76,7 @@ export class DependencyStream<T> {
         }
     }
 
-    once() {
+    once(this: DependencyStream<T>) {
         const iterator = this[Symbol.asyncIterator]({type: ReactionType.Once});
         return {
             [Symbol.asyncIterator]: () => iterator,
@@ -84,7 +84,7 @@ export class DependencyStream<T> {
         }
     }
 
-    dispose() {
+    dispose(this: DependencyStream<T>) {
         this.abortPromise.resolve(undefined);
         this.abortPromise = getPromise();
     }

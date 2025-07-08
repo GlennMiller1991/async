@@ -1,1 +1,1 @@
-export * from 'src/utils/get-promise';
+export * from './get-promise.js';

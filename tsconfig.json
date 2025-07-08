@@ -1,10 +1,9 @@
 // @formatter:off
 {
-  "extends": "tsconfig.base.json",
+  "extends": "./tsconfig.base.json",
   "compilerOptions": {
-    "module": "CommonJS",
-    "target": "ESNext",
-    "moduleResolution": "Node16",
-  }
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+  },
 }
 // @formatter:on

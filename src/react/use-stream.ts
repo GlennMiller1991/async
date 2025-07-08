@@ -1,10 +1,10 @@
-import {DependencyStream} from "../core/dependency-stream";
 import {Dispatch, SetStateAction, useEffect, useState} from "react";
+import {anyStream, DependencyStream} from "../core/index.js";
 
 class StreamController {
     setValue?: Dispatch<SetStateAction<any>>
     streams: DependencyStream<any>[];
-    iterator: ReturnType<typeof anyStream>
+    iterator!: ReturnType<typeof anyStream>
 
     constructor(...streams: DependencyStream<any>[]) {
         this.streams = streams;
