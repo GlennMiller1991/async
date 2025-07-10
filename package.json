@@ -7,12 +7,20 @@
     "import": "./dist/bin/index.js",
     "types": "./dist/types/index.d.ts"
   },
+  "files": [
+    "dist",
+    "package.json",
+    "tsconfig.base.json",
+    "tsconfig.json"
+  ],
   "scripts": {
     "clearDist": "rm dist -rf || true",
     "clearModules": "rm node_modules -rf || true",
     "clearAll": "npm run clearDist && npm run clearModules",
     "build": "cd src/react && npm run build && cd ../../ && npm run clearAll && npm i && mkdir dist && tsc",
-    "test": "jest --config=./__tests__/jest.config.js"
+    "test": "jest --config=./__tests__/jest.config.js",
+    "patch": "npm version patch && git commit -a -m version patch && git push",
+    "deploy": "npm run build && npm run test && npm run patch && npm run publish"
   },
   "author": "",
   "license": "ISC",
@@ -21,5 +29,8 @@
     "jest": "^30.0.4",
     "ts-jest": "^29.4.0",
     "typescript": "^5.x.x"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }
