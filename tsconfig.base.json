@@ -3,6 +3,7 @@
   "compilerOptions": {
 
     // syntax
+    "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "noImplicitThis": true,
     "noImplicitReturns": true,

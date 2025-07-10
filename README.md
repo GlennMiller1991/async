@@ -69,3 +69,5 @@ export const Counter: React.FC<ITest> = React.memo(({
     )
 })
 ```
+
+Now this package is CommonJS module but should be ESM.
