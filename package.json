@@ -3,19 +3,20 @@
   "version": "1.0.0",
   "description": "R&D async tools",
   "type": "module",
+  ".": {
+    "require": "./dist/bin/index.js",
+    "import": "./dist/bin/index.js",
+    "types": "./dist/types/index.d.ts"
+  },
   "scripts": {
     "clearDist": "rm dist -rf || true",
     "clearModules": "rm node_modules -rf || true",
     "clearAll": "npm run clearDist && npm run clearModules",
-    "build": "npm run clearAll && mkdir dist && tsc",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "cd src/react && npm run build && cd ../../ && npm run clearAll && npm i && mkdir dist && tsc"
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "typescript": "^5.8.3"
-  },
-  "dependencies": {
-    "react": "^19.1.0"
+    "typescript": "^5.x.x"
   }
 }

@@ -1,12 +1,12 @@
+import {anyStream, DependencyStream} from "../../core";
 import {Dispatch, SetStateAction, useEffect, useState} from "react";
-import {anyStream, DependencyStream} from "../core/index.js";
 
 class StreamController {
     setValue?: Dispatch<SetStateAction<any>>
-    streams: DependencyStream<any>[];
+    streams: DependencyStream[];
     iterator!: ReturnType<typeof anyStream>
 
-    constructor(...streams: DependencyStream<any>[]) {
+    constructor(...streams: DependencyStream[]) {
         this.streams = streams;
         this.init()
     }
@@ -24,18 +24,23 @@ class StreamController {
     }
 }
 
-export function useStream(...streams: DependencyStream<any>[]) {
+export function useStream(...streams: DependencyStream[]) {
 
     const [value, setValue] = useState(streams.map(s => s.get()));
-    const [controller] = useState(() => new StreamController(...streams))
+    const [obj] = useState<{controller?: StreamController}>(() => ({controller: new StreamController(...streams)}))
 
-    controller.setValue = setValue;
+    obj.controller!.setValue = setValue;
 
-    useEffect(() => () => controller.dispose(), []);
+    useEffect(() => {
+        return () => {
+            obj.controller!.dispose();
+            obj.controller = undefined;
+        }
+    }, []);
 
     return {
         value,
-        dispose: controller.dispose,
+        dispose: obj.controller!.dispose,
     } as {
         value: Array<any> | undefined,
         dispose: () => void,

@@ -1,2 +1,2 @@
-export * from './dependency-stream.js';
-export * from './utils.js';
+export * from './dependency-stream';
+export * from './utils';

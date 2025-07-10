@@ -1,7 +1,27 @@
-import {DependencyStream} from "./dependency-stream.js";
+import {DependencyStream} from "./dependency-stream";
 
-export function anyStream(...deps: DependencyStream<any>[]) {
-    const streams = deps.map((dep) => dep.stream()[Symbol.asyncIterator]());
+export function stream(dep: DependencyStream) {
+    return dep[Symbol.asyncIterator]();
+}
+
+export function once(dep: DependencyStream) {
+    let isIterationWas = false;
+    const iterator = dep[Symbol.asyncIterator]();
+    return {
+        [Symbol.asyncIterator]() {
+            return {
+                next: async () => {
+                    if (isIterationWas) return {done: true};
+                    return iterator.next();
+                }
+            }
+        },
+        dispose: iterator.dispose,
+    }
+}
+
+export function anyStream(...deps: DependencyStream[]) {
+    const streams = deps.map((dep) => stream(dep));
     let disposed = false;
     return {
         dispose: () => {
@@ -12,7 +32,7 @@ export function anyStream(...deps: DependencyStream<any>[]) {
             return {
                 next: async () => {
 
-                    await Promise.any(streams.map(s => s.next()));
+                    await Promise.race(streams.map(s => s.next()));
                     if (disposed) {
                         return {done: true};
                     }

@@ -1,1 +1,1 @@
-export * from './use-stream.js'
+export * from './src';

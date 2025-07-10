@@ -1,15 +1,6 @@
-import {getPromise} from "../utils/index.js";
+import {getPromise} from "../utils";
 
-enum ReactionType {
-    Once,
-    Always,
-}
-
-type IDependencyStreamConfig = {
-    type: ReactionType,
-}
-
-export class DependencyStream<T> {
+export class DependencyStream<T = any> {
     private promise: undefined | ReturnType<typeof getPromise<T>>;
     private abortPromise = getPromise<undefined>();
 
@@ -31,10 +22,10 @@ export class DependencyStream<T> {
         return this._value;
     }
 
-    private [Symbol.asyncIterator](conf: IDependencyStreamConfig) {
+    [Symbol.asyncIterator](this: DependencyStream<T>) {
         const totalDispose = this.abortPromise;
         const selfDispose = getPromise<undefined>();
-        const obj = {
+        return {
             owner: this,
             dispose: () => selfDispose.resolve(undefined),
             next: async () => {
@@ -53,8 +44,6 @@ export class DependencyStream<T> {
                     return {done: true};
                 }
 
-                conf.type === ReactionType.Once && obj.dispose();
-
                 const value = this.get();
                 return {
                     done: false,
@@ -64,24 +53,6 @@ export class DependencyStream<T> {
                 };
             }
         };
-        return obj;
-    }
-
-    stream(this: DependencyStream<T>) {
-        const iterator = this[Symbol.asyncIterator]({type: ReactionType.Always});
-        return {
-            owner: this,
-            [Symbol.asyncIterator]: () => iterator,
-            dispose: iterator.dispose,
-        }
-    }
-
-    once(this: DependencyStream<T>) {
-        const iterator = this[Symbol.asyncIterator]({type: ReactionType.Once});
-        return {
-            [Symbol.asyncIterator]: () => iterator,
-            dispose: iterator.dispose,
-        }
     }
 
     dispose(this: DependencyStream<T>) {

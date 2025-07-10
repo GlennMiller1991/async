@@ -1,1 +1,1 @@
-export * from './get-promise.js';
+export * from './get-promise';

@@ -3,7 +3,6 @@
   "compilerOptions": {
 
     // syntax
-    "target": "ESNext",
     "allowSyntheticDefaultImports": true,
     "noImplicitThis": true,
     "noImplicitReturns": true,
@@ -16,18 +15,20 @@
     "strictPropertyInitialization": true,
 
     // emit
+    "target": "ESNext",
     "noEmitOnError": true,
     "removeComments": false,
     "outDir": "dist/bin",
     "declaration": true,
     "declarationDir": "dist/types",
-    "declarationMap": true,
-    "sourceMap": false
+    "declarationMap": false,    // Typically, source files are not emits, so there is no reason to emit source maps
+    "sourceMap": false          // Typically, source files are not emits, so there is no reason to emit source maps
   },
 
   "exclude": [
-    "/node_modules/",
-    "/dist/"
+    "./node_modules/",
+    "./dist/",
+    "./__tests__",
   ]
 }
 // @formatter:on
