@@ -1,6 +1,6 @@
 {
   "name": "@fbltd/async",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "R&D async tools",
   "exports": {
     "require": "./dist/bin/index.js",
