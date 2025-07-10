@@ -13,6 +13,7 @@
     "strictBuiltinIteratorReturn": true,
     "strictFunctionTypes": true,
     "strictPropertyInitialization": true,
+    "allowJs": false,
 
     // emit
     "target": "ESNext",

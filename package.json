@@ -2,7 +2,7 @@
   "name": "@fbltd/async",
   "version": "1.0.0",
   "description": "R&D async tools",
-  ".": {
+  "exports": {
     "require": "./dist/bin/index.js",
     "import": "./dist/bin/index.js",
     "types": "./dist/types/index.d.ts"
@@ -11,7 +11,8 @@
     "clearDist": "rm dist -rf || true",
     "clearModules": "rm node_modules -rf || true",
     "clearAll": "npm run clearDist && npm run clearModules",
-    "build": "cd src/react && npm run build && cd ../../ && npm run clearAll && npm i && mkdir dist && tsc"
+    "build": "cd src/react && npm run build && cd ../../ && npm run clearAll && npm i && mkdir dist && tsc",
+    "test": "jest --config=./__tests__/jest.config.js"
   },
   "author": "",
   "license": "ISC",

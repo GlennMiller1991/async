@@ -5,7 +5,7 @@ const {createJsWithTsPreset} = require('ts-jest');
 module.exports = async () => {
     return {
         verbose: true,
-        rootDir: './__tests__',
+        rootDir: './src',
         ...createJsWithTsPreset(),
     };
 };
