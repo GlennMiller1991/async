@@ -36,7 +36,7 @@ export function anyStream(...deps: DependencyStream[]) {
                     if (disposed) {
                         return {done: true};
                     }
-                    return {done: false, value: streams.map(s => s.owner.get())};
+                    return {done: false, value: streams.map(s => s.owner.value)};
                 }
             }
         }

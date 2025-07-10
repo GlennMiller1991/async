@@ -26,7 +26,7 @@ class StreamController {
 
 export function useStream(...streams: DependencyStream[]) {
 
-    const [value, setValue] = useState(streams.map(s => s.get()));
+    const [value, setValue] = useState(streams.map(s => s.value));
     const [obj] = useState<{controller?: StreamController}>(() => ({controller: new StreamController(...streams)}))
 
     obj.controller!.setValue = setValue;
