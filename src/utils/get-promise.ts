@@ -1,15 +1,15 @@
-export function getPromise<TReturn>() {
+export function getPromise<TReturn = void>() {
     let resolve!: (value: TReturn) => void;
     let reject!: (value: Error) => void;
     let isPending: boolean = true;
     let isFulfilled: boolean = false;
 
     const promise = new Promise<TReturn>((res, rej) => {
-        resolve = (value: TReturn) => {
+        resolve = ((value: TReturn) => {
             res(value);
             isPending = false;
             isFulfilled = true;
-        };
+        }) as typeof resolve;
         reject = (error: Error) => {
             rej(error);
             isPending = false;

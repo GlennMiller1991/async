@@ -1,8 +1,8 @@
 import {getPromise} from "../utils";
 
 export class DependencyStream<T = any> {
-    private promise: undefined | ReturnType<typeof getPromise<T>>;
-    private abortPromise = getPromise<undefined>();
+    private promiseConf: undefined | ReturnType<typeof getPromise<T>>;
+    private abortPromise = getPromise();
 
     constructor(private _value: T) {
 
@@ -11,40 +11,40 @@ export class DependencyStream<T = any> {
     private _set(v: T) {
         if (v === this._value) return;
         this._value = v;
-        this.promise && this.promise.resolve(v);
+        this.promiseConf && this.promiseConf.resolve(v);
     }
 
-    set = (v: T) => {
+    set value(v: T) {
         this._set(v);
     }
 
-    get() {
+    get value() {
         return this._value;
     }
 
     [Symbol.asyncIterator](this: DependencyStream<T>) {
         const totalDispose = this.abortPromise;
-        const selfDispose = getPromise<undefined>();
+        const selfDispose = getPromise();
         return {
             owner: this,
-            dispose: () => selfDispose.resolve(undefined),
+            dispose: () => selfDispose.resolve(),
             next: async () => {
-                if (!this.promise) {
-                    this.promise = getPromise();
+                if (!this.promiseConf) {
+                    this.promiseConf = getPromise();
                     this._set(this._value);
                 }
 
                 await Promise.race([
                     totalDispose.promise,
                     selfDispose.promise,
-                    this.promise.promise,
+                    this.promiseConf.promise,
                 ]);
-                this.promise = undefined;
+                this.promiseConf = undefined;
                 if (totalDispose.isFulfilled || selfDispose.isFulfilled) {
                     return {done: true};
                 }
 
-                const value = this.get();
+                const value = this.value;
                 return {
                     done: false,
                     get value() {
@@ -56,7 +56,7 @@ export class DependencyStream<T = any> {
     }
 
     dispose(this: DependencyStream<T>) {
-        this.abortPromise.resolve(undefined);
+        this.abortPromise.resolve();
         this.abortPromise = getPromise();
     }
 }
