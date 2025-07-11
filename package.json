@@ -1,7 +1,12 @@
 {
   "name": "@fbltd/async",
   "version": "1.0.8",
-  "description": "R&D async tools",
+  "description": "Miscellaneous async utils",
+  "keywords": [
+    "Reactivity",
+    "State Management",
+    "Async"
+  ],
   "exports": {
     "require": "./dist/bin/index.js",
     "import": "./dist/bin/index.js",
