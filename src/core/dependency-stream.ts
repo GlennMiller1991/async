@@ -1,14 +1,35 @@
 import {getPromise} from "../utils";
 
+interface ICompareFn<T> {
+    (prev: T, cur: T): boolean;
+}
+
+function baseComparer<T>(prev: T, cur: T) {
+    return prev === cur;
+}
+
+type IDependencyStreamConfig<T> = {
+    isEqual: ICompareFn<T>
+}
+
 export class DependencyStream<T = any> {
     private promiseConf: undefined | ReturnType<typeof getPromise<T>>;
     private abortPromise = getPromise();
+    private config: IDependencyStreamConfig<T>;
 
-    constructor(private _value: T) {
-
+    constructor(private _value: T, config: Partial<IDependencyStreamConfig<T>> = {}) {
+        this.config = {
+            isEqual: baseComparer,
+            ...config,
+        };
     }
 
-    private _set(v: T) {
+    private _set(v: T, force?: boolean) {
+        if (!force) {
+            if (this.config.isEqual(this._value, v)) {
+                return;
+            }
+        }
         if (v === this._value) return;
         this._value = v;
         this.promiseConf && this.promiseConf.resolve(v);

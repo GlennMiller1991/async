@@ -5,9 +5,22 @@ describe('Dependency Stream', () => {
     type IStreamType = number;
     const initialValue: IStreamType = 1;
     let counter: DependencyStream<IStreamType>;
+    let reactionFn: ReturnType<typeof jest.fn>;
+    let exitFn: ReturnType<typeof jest.fn>;
+
+    async function subscribe(stream: DependencyStream<any> = counter) {
+        for await (let value of stream) {
+            reactionFn(value);
+        }
+
+        exitFn();
+    }
+
     beforeEach(() => {
         counter?.dispose();
         counter = new DependencyStream(initialValue);
+        reactionFn = jest.fn();
+        exitFn = jest.fn();
     })
     test('Dependency Stream should be of defined type', () => {
         expect(counter).toBeInstanceOf(DependencyStream);
@@ -30,13 +43,6 @@ describe('Dependency Stream', () => {
     });
 
     test('Stream should work once on value sync changes', async () => {
-        const fn = jest.fn();
-        async function subscribe() {
-            for await (let value of counter) {
-                fn(value)
-            }
-        }
-
         const promise = subscribe();
         let i = 0;
         for (i; i < 10; i++) {
@@ -47,7 +53,87 @@ describe('Dependency Stream', () => {
         counter.dispose();
 
         await promise;
-        expect(fn).toHaveBeenCalledTimes(1);
-        expect(fn).toHaveBeenCalledWith(i - 1);
+        expect(reactionFn).toHaveBeenCalledTimes(1);
+        expect(reactionFn).toHaveBeenCalledWith(i - 1);
     });
+
+    test('Stream should exit on sync dispose', async () => {
+        const promise = subscribe();
+        let i = 0;
+        for (i; i < 10; i++) {
+            counter.value = i;
+        }
+        counter.dispose();
+
+        await promise;
+        expect(reactionFn).not.toHaveBeenCalled();
+        expect(exitFn).toHaveBeenCalledTimes(1);
+
+    });
+
+    test('Stream should work once at each task time', async () => {
+        const outerQty = 10;
+        const innerQty = 10;
+        let valueHaveBeenChangedTimes = 0;
+        counter.value = -1;
+
+        async function run() {
+            for (let i = 0; i < outerQty; i++) {
+                for (let k = 0; k < innerQty; k++) {
+                    counter.value += 1;
+                    valueHaveBeenChangedTimes++;
+                }
+                await delay();
+            }
+
+            counter.dispose();
+        }
+
+        const promise = subscribe();
+        run();
+        await promise;
+
+        expect(valueHaveBeenChangedTimes).toEqual(outerQty * innerQty);
+        expect(reactionFn).toHaveBeenCalledTimes(outerQty);
+        expect(exitFn).toHaveBeenCalledTimes(1);
+    });
+
+    test('Compare function should not to allow reaction trigger', async () => {
+        const initial = {
+            string: '0',
+            counter: 0,
+        }
+
+        function isEqual(a: typeof initial, b: typeof a) {
+            return a.string === b.string && a.counter === b.counter;
+        }
+
+        const objectStream = new DependencyStream(initial, {isEqual});
+
+        const outerQty = 10;
+        const innerQty = 10;
+        let valueHaveBeenChangedTimes = 0;
+        let valueHaveBeenSettledTimes = 0;
+
+        async function run() {
+            for (let i = 0; i < outerQty; i++) {
+                for (let k = 0; k < innerQty; k++) {
+                    valueHaveBeenSettledTimes++;
+                    valueHaveBeenChangedTimes++;
+
+                    objectStream.value = {...objectStream.value};
+                }
+                await delay();
+            }
+
+            objectStream.dispose();
+        }
+
+        let promise = subscribe(objectStream);
+        run();
+        await promise;
+        expect(reactionFn).toHaveBeenCalledTimes(0);
+        expect(exitFn).toHaveBeenCalledTimes(1);
+
+    })
 });
