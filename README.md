@@ -1,10 +1,37 @@
-### R&D async tools ###
+# Async tools
 
-First of all, attention paid to creation of reactive model
-leveraging native JavaScript async features like Promises, (async) iterators
-and generators.
+## delay
+delay is a function that can be executed synchronous or asynchronous.
+The behaviour depends on passed arguments:
+```typescript
+// Returns a promise - asynchrounous running in a non-blocking manner;
+await delay(number);
 
-The version is 0.0.0 so keep it in mind
+// Returns nothing - synchrounous running in a blocking manner;
+delay(number, true);
+```
+
+## getPromise
+getPromise is a function that creates and returns promise, its fulfillment functions
+and status flags.
+Returned type is:
+```typescript
+type IPromiseConfiguration<T> = {
+    resolve(arg: T): void, // function that resolves promise
+    reject(err: Error): void, // function that rejects promise
+    promise: Promise<T>,        // promise itself
+    readonly isPending: boolean, // promise status flag
+    readonly isFulfilled: boolean, // reverted promise status flag
+} 
+```
+There is no any management of passed data for resolving.
+Returned promise is usual ES promise so it is impossible to fulfill promise twice.
+
+## DependencyStream
+### core
+Implementation of reactive model leveraging native JavaScript async features like
+Promises, (async) iterators and generators.
+The version is 0.0.x so keep it in mind
 
 ```typescript
 const counter = new DependencyStream<number>(0);
@@ -32,6 +59,8 @@ setInterval(() => {
 }, 1000)
 ```
 
+### Framework integrations
+#### React
 Of course, there is a React integration via useStream hook:
 
 ```typescript jsx
@@ -70,4 +99,5 @@ export const Counter: React.FC<ITest> = React.memo(({
 })
 ```
 
-Now this package is CommonJS module but should be ESM.
+## Disclaimer
+Now this package is CommonJS module but should be an ESM.
