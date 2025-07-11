@@ -29,3 +29,5 @@ export function getPromise<TReturn = void>() {
         promise
     }
 }
+
+export type IPromiseConfiguration<T = void> = ReturnType<typeof getPromise<T>>;

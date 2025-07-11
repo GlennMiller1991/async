@@ -12,7 +12,6 @@ describe('Dependency Stream', () => {
         for await (let value of stream) {
             reactionFn(value);
         }
-
         exitFn();
     }
 
@@ -108,7 +107,7 @@ describe('Dependency Stream', () => {
             return a.string === b.string && a.counter === b.counter;
         }
 
-        const objectStream = new DependencyStream(initial, {isEqual});
+        const objectStream = new DependencyStream(initial, {withCustomEquality: isEqual});
 
         const outerQty = 10;
         const innerQty = 10;
@@ -135,5 +134,19 @@ describe('Dependency Stream', () => {
         expect(reactionFn).toHaveBeenCalledTimes(0);
         expect(exitFn).toHaveBeenCalledTimes(1);
 
-    })
+    });
+
+    test('Reaction on subscribe', async () => {
+        const counter = new DependencyStream(0, {withReactionOnSubscribe: true});
+
+        subscribe(counter);
+        await delay();
+
+        expect(reactionFn).toHaveBeenCalledTimes(1);
+        counter.dispose();
+        await delay();
+        expect(reactionFn).toHaveBeenCalledTimes(1);
+        expect(exitFn).toHaveBeenCalledTimes(1);
+
+    });
 });

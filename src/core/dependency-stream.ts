@@ -1,6 +1,6 @@
-import {getPromise} from "../utils";
+import {getPromise, IPromiseConfiguration} from "../utils";
 
-interface ICompareFn<T> {
+interface IIsEquals<T> {
     (prev: T, cur: T): boolean;
 }
 
@@ -9,30 +9,33 @@ function baseComparer<T>(prev: T, cur: T) {
 }
 
 type IDependencyStreamConfig<T> = {
-    isEqual: ICompareFn<T>
+    withCustomEquality: IIsEquals<T>,
+    withReactionOnSubscribe: boolean,
 }
 
 export class DependencyStream<T = any> {
-    private promiseConf: undefined | ReturnType<typeof getPromise<T>>;
+    private reactionPromise: undefined | IPromiseConfiguration<T>;
     private abortPromise = getPromise();
     private config: IDependencyStreamConfig<T>;
 
     constructor(private _value: T, config: Partial<IDependencyStreamConfig<T>> = {}) {
         this.config = {
-            isEqual: baseComparer,
+            withCustomEquality: baseComparer,
+            withReactionOnSubscribe: false,
             ...config,
         };
     }
 
-    private _set(v: T, force?: boolean) {
-        if (!force) {
-            if (this.config.isEqual(this._value, v)) {
-                return;
-            }
+    private _set(v: T) {
+        if (this.config.withCustomEquality(this._value, v)) {
+            return;
         }
-        if (v === this._value) return;
         this._value = v;
-        this.promiseConf && this.promiseConf.resolve(v);
+        if (this.reactionPromise) {
+            this.reactionPromise.resolve(v);
+            this.reactionPromise = undefined;
+        }
+
     }
 
     set value(v: T) {
@@ -46,30 +49,42 @@ export class DependencyStream<T = any> {
     [Symbol.asyncIterator](this: DependencyStream<T>) {
         const totalDispose = this.abortPromise;
         const selfDispose = getPromise();
+        const externalPromises: Promise<any>[] = [totalDispose.promise, selfDispose.promise];
+        let firstPromise: IPromiseConfiguration<T> | undefined;
+        if (this.config.withReactionOnSubscribe) {
+            firstPromise = getPromise<T>();
+            firstPromise.resolve(this.value);
+            externalPromises.push(firstPromise.promise);
+        }
+
+        const owner = this;
         return {
-            owner: this,
+            owner,
             dispose: () => selfDispose.resolve(),
             next: async () => {
-                if (!this.promiseConf) {
-                    this.promiseConf = getPromise();
+                if (!this.reactionPromise) {
+                    this.reactionPromise = getPromise();
                     this._set(this._value);
                 }
 
                 await Promise.race([
-                    totalDispose.promise,
-                    selfDispose.promise,
-                    this.promiseConf.promise,
+                    ...externalPromises,
+                    this.reactionPromise.promise,
                 ]);
-                this.promiseConf = undefined;
+
                 if (totalDispose.isFulfilled || selfDispose.isFulfilled) {
                     return {done: true};
                 }
 
-                const value = this.value;
+                if (firstPromise) {
+                    firstPromise = undefined;
+                    externalPromises.pop();
+                }
+
                 return {
                     done: false,
                     get value() {
-                        return value;
+                        return owner.value;
                     }
                 };
             }
@@ -79,6 +94,7 @@ export class DependencyStream<T = any> {
     dispose(this: DependencyStream<T>) {
         this.abortPromise.resolve();
         this.abortPromise = getPromise();
+        this.reactionPromise = undefined;
     }
 }
 
