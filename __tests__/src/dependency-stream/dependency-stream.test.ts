@@ -7,7 +7,7 @@ describe('Dependency Stream', () => {
     let reactionFn: ReturnType<typeof jest.fn>;
     let exitFn: ReturnType<typeof jest.fn>;
 
-    async function subscribe(stream: DependencyStream<any> = counter) {
+    async function subscribe(stream: DependencyStream = counter) {
         for await (let value of stream) {
             reactionFn(value);
         }

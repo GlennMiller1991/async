@@ -2,7 +2,7 @@ import {DependencyStream} from "../dependency-stream";
 import {symAI} from "../../constants";
 import {getPromise} from "../../get-promise";
 
-export function raceStream(...deps: DependencyStream[]) {
+export function raceStream<TArray extends DependencyStream[]>(...deps: NoInfer<TArray>) {
     const streams = deps.map((dep) => dep[symAI]());
     let selfDisposePromise = getPromise();
     let isDisposed = false;
