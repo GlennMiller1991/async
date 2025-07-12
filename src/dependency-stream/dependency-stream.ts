@@ -1,4 +1,5 @@
 import {getPromise, IPromiseConfiguration} from "../get-promise";
+import {IIteratorOwner, IStream} from "./contracts";
 
 interface IIsEquals<T> {
     (prev: T, cur: T): boolean;
@@ -17,7 +18,7 @@ type IThisStreamConfig = Partial<{
     withReactionOnSubscribe: boolean
 }>
 
-export class DependencyStream<T = any> {
+export class DependencyStream<T = any> implements IIteratorOwner<T> {
     private reactionPromise: undefined | IPromiseConfiguration<T>;
     private abortPromise = getPromise();
     private config: IAllStreamConfig<T>;
@@ -50,10 +51,9 @@ export class DependencyStream<T = any> {
         return this._value;
     }
 
-    [Symbol.asyncIterator](this: DependencyStream<T>, thisStreamConfig: IThisStreamConfig = {}) {
+    [Symbol.asyncIterator](this: DependencyStream<T>, thisStreamConfig: IThisStreamConfig = {}): IStream<T> {
         const totalDispose = this.abortPromise;
-        const selfDispose = getPromise();
-        const externalPromises: Promise<any>[] = [totalDispose.promise, selfDispose.promise];
+        const externalPromises: Promise<any>[] = [totalDispose.promise];
         let firstPromise: IPromiseConfiguration<T> | undefined;
         if (this.config.withReactionOnSubscribe || thisStreamConfig.withReactionOnSubscribe) {
             firstPromise = getPromise<T>();
@@ -65,7 +65,7 @@ export class DependencyStream<T = any> {
         const owner = this;
         return {
             owner,
-            dispose: () => selfDispose.resolve(),
+            dispose: () => owner.dispose(),
             get isDisposed() {
                 return isDisposed;
             },
@@ -80,9 +80,9 @@ export class DependencyStream<T = any> {
                     this.reactionPromise.promise,
                 ]);
 
-                if (totalDispose.isFulfilled || selfDispose.isFulfilled) {
+                if (totalDispose.isFulfilled) {
                     isDisposed = true;
-                    return {done: true};
+                    return {done: true} as {done: true, value: void};
                 }
 
                 if (firstPromise) {
