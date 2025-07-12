@@ -2,6 +2,7 @@
   "name": "@fbltd/async",
   "version": "1.0.9",
   "description": "Miscellaneous async utils",
+  "homepage": "https://github.com/GlennMiller1991/async",
   "keywords": [
     "Reactivity",
     "State Management",
@@ -22,7 +23,7 @@
     "clearDist": "rm dist -rf || true",
     "clearModules": "rm node_modules -rf || true",
     "clearAll": "npm run clearDist && npm run clearModules",
-    "build": "cd src/react && npm run build && cd ../../ && npm run clearAll && npm i && mkdir dist && tsc",
+    "build": "cd src/dependency-stream/integrations/react && npm run build && cd ../../../../ && npm run clearAll && npm i && mkdir dist && tsc",
     "test": "jest --config=./__tests__/jest.config.js",
     "postVersionCommit": "git commit -m='post version commit' || true",
     "postVersionPush": "git push || true",

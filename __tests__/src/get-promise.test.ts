@@ -1,4 +1,4 @@
-import {getPromise} from "../../../src";
+import {getPromise} from "../../src";
 
 describe('getPromise', () => {
     type IPromiseResult = 1;

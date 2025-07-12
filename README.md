@@ -1,6 +1,8 @@
 # Async tools
 
-## delay
+## Overview
+
+### delay
 delay is a function that can be executed synchronous or asynchronous.
 The behaviour depends on passed arguments:
 ```typescript
@@ -8,10 +10,10 @@ The behaviour depends on passed arguments:
 await delay(number);
 
 // Returns nothing - synchrounous running in a blocking manner;
-delay(number, true);
+delay(number, 'sync');
 ```
 
-## getPromise
+### getPromise
 getPromise is a function that creates and returns promise, its fulfillment functions
 and status flags.
 Returned type is:
@@ -27,8 +29,8 @@ type IPromiseConfiguration<T> = {
 There is no any management of passed data for resolving.
 Returned promise is usual ES promise so it is impossible to fulfill promise twice.
 
-## DependencyStream
-### core
+### DependencyStream
+#### core
 Implementation of reactive model leveraging native JavaScript async features like
 Promises, (async) iterators and generators.
 The version is 0.0.x so keep it in mind
@@ -37,7 +39,7 @@ The version is 0.0.x so keep it in mind
 const counter = new DependencyStream<number>(0);
 
 async function onCounterChange() {
-    for await (let value of counter.stream()) {
+    for await (let value of counter) {
         // do whatever you want
     }
 
@@ -54,13 +56,13 @@ setInterval(() => {
         // differs from the previous one. 
         // Subsequent value updates are collected and processed together
         // during the next microtask execution phase of the event loop.
-        counter.set(i++);
+        counter.value = i++;
     }
 }, 1000)
 ```
 
-### Framework integrations
-#### React
+#### Framework integrations
+##### React
 Of course, there is a React integration via useStream hook:
 
 ```typescript jsx
@@ -99,5 +101,8 @@ export const Counter: React.FC<ITest> = React.memo(({
 })
 ```
 
-## Disclaimer
+### Disclaimer
 Now this package is CommonJS module but should be an ESM.
+
+## Installation
+Just type ```npm i @fbltd/async``` 

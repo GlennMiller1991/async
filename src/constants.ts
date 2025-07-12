@@ -1,0 +1,1 @@
+export const symAI: typeof Symbol.asyncIterator = Symbol.asyncIterator;

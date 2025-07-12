@@ -1,5 +1,4 @@
-import {DependencyStream} from "../../../src";
-import {delay} from "../../../src/utils/delay";
+import {delay, DependencyStream} from "@src";
 
 describe('Dependency Stream', () => {
     type IStreamType = number;

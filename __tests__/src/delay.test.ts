@@ -1,10 +1,10 @@
-import {delay} from "../../../src/utils/delay";
+import {delay} from "../../src";
 
 describe("delay", () => {
-    test('sync', () => {
+    test('sync', async () => {
         const start = Date.now();
-        const value = 1;
-        const res = delay(value, true);
+        const value = 10;
+        const res = delay(value, 'sync');
         expect(Date.now() - start).toBeGreaterThanOrEqual(value);
         expect(res).toBeUndefined();
     });
