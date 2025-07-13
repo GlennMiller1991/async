@@ -1,5 +1,13 @@
 # Async tools
 
+## Disclaimer
+Now this package is CommonJS module but should be an ESM.
+
+## Installation
+You can install this package with your favorite package manager.<br/>
+Npm, for example, will be looks like:
+```npm i @fbltd/async```
+
 ## Overview
 
 ### delay
@@ -100,9 +108,3 @@ export const Counter: React.FC<ITest> = React.memo(({
     )
 })
 ```
-
-### Disclaimer
-Now this package is CommonJS module but should be an ESM.
-
-## Installation
-Just type ```npm i @fbltd/async``` 
