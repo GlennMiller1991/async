@@ -31,5 +31,51 @@ describe('Dependency stream. Once', () => {
 
         expect(reactionFn).toHaveBeenCalledTimes(1);
         expect(exitFn).toHaveBeenCalledTimes(1);
-    })
+    });
+
+    test('once should not dispose other streams', async () => {
+        const onceReactionFn = jest.fn();
+        const onceExitFn = jest.fn();
+
+        async function onceSubscribe() {
+            for await (let value of onceStream(counter)) {
+                onceReactionFn();
+            }
+            onceExitFn();
+        }
+
+        async function subscribe() {
+            for await (let value of counter) {
+                reactionFn();
+            }
+            exitFn();
+        }
+
+        onceSubscribe();
+        subscribe();
+
+        const qty = 10;
+        for (let i = 0; i < qty; i++) {
+            counter.value++;
+            await delay();
+        }
+
+        counter.dispose();
+        await delay();
+
+        expect(reactionFn).toHaveBeenCalledTimes(qty);
+        expect(exitFn).toHaveBeenCalledTimes(1);
+        expect(onceReactionFn).toHaveBeenCalledTimes(1);
+        expect(onceExitFn).toHaveBeenCalledTimes(1);
+    });
+
+    test('once should work with IAllStreamConfig.withReactionOnSubscribe', async () => {
+       const counter = new DependencyStream(1, {withReactionOnSubscribe: true});
+
+       subscribe(counter);
+
+       await delay();
+       expect(reactionFn).toHaveBeenCalledTimes(1);
+       expect(exitFn).toHaveBeenCalledTimes(1);
+    });
 })
