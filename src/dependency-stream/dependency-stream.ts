@@ -1,5 +1,5 @@
 import {getPromise, IPromiseConfiguration} from "../get-promise";
-import {IIteratorOwner, IStream} from "./contracts";
+import {IIteratorOwner, IStreamIterator} from "./contracts";
 
 interface IIsEquals<T> {
     (prev: T, cur: T): boolean;
@@ -15,7 +15,8 @@ type IAllStreamConfig<T> = {
 }
 
 type IThisStreamConfig = Partial<{
-    withReactionOnSubscribe: boolean
+    withReactionOnSubscribe: boolean,
+    externalDispose: IPromiseConfiguration<any>,
 }>
 
 export class DependencyStream<T = any> implements IIteratorOwner<T> {
@@ -51,21 +52,28 @@ export class DependencyStream<T = any> implements IIteratorOwner<T> {
         return this._value;
     }
 
-    [Symbol.asyncIterator](this: DependencyStream<T>, thisStreamConfig: IThisStreamConfig = {}): IStream<T> {
+    [Symbol.asyncIterator](this: DependencyStream<T>, thisStreamConfig: IThisStreamConfig = {}): IStreamIterator<T> {
         const totalDispose = this.abortPromise;
         const externalPromises: Promise<any>[] = [totalDispose.promise];
         let firstPromise: IPromiseConfiguration<T> | undefined;
-        if (this.config.withReactionOnSubscribe || thisStreamConfig.withReactionOnSubscribe) {
+        const withReactionOnSubscribe = this.config.withReactionOnSubscribe || thisStreamConfig.withReactionOnSubscribe;
+
+        if (withReactionOnSubscribe) {
             firstPromise = getPromise<T>();
             firstPromise.resolve(this.value);
             externalPromises.push(firstPromise.promise);
-        };
+        }
+
+        if (thisStreamConfig.externalDispose) {
+            externalPromises.push(thisStreamConfig.externalDispose.promise);
+        }
+
         let isDisposed = false;
 
         const owner = this;
         return {
             owner,
-            dispose: () => owner.dispose(),
+            dispose: owner.dispose.bind(owner),
             get isDisposed() {
                 return isDisposed;
             },
@@ -80,7 +88,7 @@ export class DependencyStream<T = any> implements IIteratorOwner<T> {
                     this.reactionPromise.promise,
                 ]);
 
-                if (totalDispose.isFulfilled) {
+                if (totalDispose.isFulfilled || thisStreamConfig.externalDispose?.isFulfilled) {
                     isDisposed = true;
                     return {done: true} as {done: true, value: void};
                 }
