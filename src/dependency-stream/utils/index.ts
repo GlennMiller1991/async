@@ -1,2 +1,3 @@
-export {onceStream} from "./once.stream";
-export {raceStream} from "./race.stream";
+export * from "./once.stream";
+export * from "./race.stream";
+export * from "./next";
