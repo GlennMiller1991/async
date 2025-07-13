@@ -1,4 +1,4 @@
-import {delay, DependencyStream} from "@src";
+import {delay, DependencyStream, getPromise} from "@src";
 
 describe('Dependency Stream', () => {
     type IStreamType = number;
@@ -20,163 +20,163 @@ describe('Dependency Stream', () => {
         reactionFn = jest.fn();
         exitFn = jest.fn();
     })
-     test('Dependency Stream should be of defined type', () => {
-         expect(counter).toBeInstanceOf(DependencyStream);
-         expect(counter.value).toBeDefined();
-         expect(counter.value).toBeDefined();
-         expect(counter.dispose).toBeDefined();
-         expect(counter[Symbol.asyncIterator]).toBeDefined();
-     });
+    test('Dependency Stream should be of defined type', () => {
+        expect(counter).toBeInstanceOf(DependencyStream);
+        expect(counter.value).toBeDefined();
+        expect(counter.value).toBeDefined();
+        expect(counter.dispose).toBeDefined();
+        expect(counter[Symbol.asyncIterator]).toBeDefined();
+    });
 
-     test('Stream should store initial value', () => {
-         let counter: DependencyStream;
-         for (let init of [
-             1, 'asdf', null, NaN, Symbol('test'),
-             BigInt(10), {}, [], new Map(), new Set(),
-             new DependencyStream(1), undefined
-         ]) {
-             counter = new DependencyStream(init);
-             expect(counter.value).toBe(init);
-         }
-     });
+    test('Stream should store initial value', () => {
+        let counter: DependencyStream;
+        for (let init of [
+            1, 'asdf', null, NaN, Symbol('test'),
+            BigInt(10), {}, [], new Map(), new Set(),
+            new DependencyStream(1), undefined
+        ]) {
+            counter = new DependencyStream(init);
+            expect(counter.value).toBe(init);
+        }
+    });
 
-     test('Stream should work once on value sync changes', async () => {
-         const promise = subscribe();
-         let i = 0;
-         for (i; i < 10; i++) {
-             counter.value = i;
-         }
+    test('Stream should work once on value sync changes', async () => {
+        const promise = subscribe();
+        let i = 0;
+        for (i; i < 10; i++) {
+            counter.value = i;
+        }
 
-         await delay(0);
-         counter.dispose();
+        await delay(0);
+        counter.dispose();
 
-         await promise;
-         expect(reactionFn).toHaveBeenCalledTimes(1);
-         expect(reactionFn).toHaveBeenCalledWith(i - 1);
-     });
+        await promise;
+        expect(reactionFn).toHaveBeenCalledTimes(1);
+        expect(reactionFn).toHaveBeenCalledWith(i - 1);
+    });
 
-     test('Stream should exit on sync dispose', async () => {
-         const promise = subscribe();
-         let i = 0;
-         for (i; i < 10; i++) {
-             counter.value = i;
-         }
-         counter.dispose();
+    test('Stream should exit on sync dispose', async () => {
+        const promise = subscribe();
+        let i = 0;
+        for (i; i < 10; i++) {
+            counter.value = i;
+        }
+        counter.dispose();
 
-         await promise;
-         expect(reactionFn).not.toHaveBeenCalled();
-         expect(exitFn).toHaveBeenCalledTimes(1);
+        await promise;
+        expect(reactionFn).not.toHaveBeenCalled();
+        expect(exitFn).toHaveBeenCalledTimes(1);
 
-     });
+    });
 
-     test('Stream should work once at each task time', async () => {
-         const outerQty = 10;
-         const innerQty = 10;
-         let valueHaveBeenChangedTimes = 0;
-         counter.value = -1;
+    test('Stream should work once at each task time', async () => {
+        const outerQty = 10;
+        const innerQty = 10;
+        let valueHaveBeenChangedTimes = 0;
+        counter.value = -1;
 
-         async function run() {
-             for (let i = 0; i < outerQty; i++) {
-                 for (let k = 0; k < innerQty; k++) {
-                     counter.value += 1;
-                     valueHaveBeenChangedTimes++;
-                 }
-                 await delay();
-             }
+        async function run() {
+            for (let i = 0; i < outerQty; i++) {
+                for (let k = 0; k < innerQty; k++) {
+                    counter.value += 1;
+                    valueHaveBeenChangedTimes++;
+                }
+                await delay();
+            }
 
-             counter.dispose();
-         }
+            counter.dispose();
+        }
 
-         const promise = subscribe();
-         run();
-         await promise;
+        const promise = subscribe();
+        run();
+        await promise;
 
-         expect(valueHaveBeenChangedTimes).toEqual(outerQty * innerQty);
-         expect(reactionFn).toHaveBeenCalledTimes(outerQty);
-         expect(exitFn).toHaveBeenCalledTimes(1);
-     });
+        expect(valueHaveBeenChangedTimes).toEqual(outerQty * innerQty);
+        expect(reactionFn).toHaveBeenCalledTimes(outerQty);
+        expect(exitFn).toHaveBeenCalledTimes(1);
+    });
 
-     test('Compare function should not to allow reaction trigger', async () => {
-         const initial = {
-             string: '0',
-             counter: 0,
-         }
+    test('Compare function should not to allow reaction trigger', async () => {
+        const initial = {
+            string: '0',
+            counter: 0,
+        }
 
-         function isEqual(a: typeof initial, b: typeof a) {
-             return a.string === b.string && a.counter === b.counter;
-         }
+        function isEqual(a: typeof initial, b: typeof a) {
+            return a.string === b.string && a.counter === b.counter;
+        }
 
-         const objectStream = new DependencyStream(initial, {withCustomEquality: isEqual});
+        const objectStream = new DependencyStream(initial, {withCustomEquality: isEqual});
 
-         const outerQty = 10;
-         const innerQty = 10;
-         let valueHaveBeenChangedTimes = 0;
-         let valueHaveBeenSettledTimes = 0;
+        const outerQty = 10;
+        const innerQty = 10;
+        let valueHaveBeenChangedTimes = 0;
+        let valueHaveBeenSettledTimes = 0;
 
-         async function run() {
-             for (let i = 0; i < outerQty; i++) {
-                 for (let k = 0; k < innerQty; k++) {
-                     valueHaveBeenSettledTimes++;
-                     valueHaveBeenChangedTimes++;
+        async function run() {
+            for (let i = 0; i < outerQty; i++) {
+                for (let k = 0; k < innerQty; k++) {
+                    valueHaveBeenSettledTimes++;
+                    valueHaveBeenChangedTimes++;
 
-                     objectStream.value = {...objectStream.value};
-                 }
-                 await delay();
-             }
+                    objectStream.value = {...objectStream.value};
+                }
+                await delay();
+            }
 
-             objectStream.dispose();
-         }
+            objectStream.dispose();
+        }
 
-         let promise = subscribe(objectStream);
-         run();
-         await promise;
-         expect(reactionFn).toHaveBeenCalledTimes(0);
-         expect(exitFn).toHaveBeenCalledTimes(1);
+        let promise = subscribe(objectStream);
+        run();
+        await promise;
+        expect(reactionFn).toHaveBeenCalledTimes(0);
+        expect(exitFn).toHaveBeenCalledTimes(1);
 
-     });
+    });
 
-     test('Reaction on subscribe', async () => {
-         const counter = new DependencyStream(0, {withReactionOnSubscribe: true});
+    test('Reaction on subscribe', async () => {
+        const counter = new DependencyStream(0, {withReactionOnSubscribe: true});
 
-         subscribe(counter);
-         await delay();
+        subscribe(counter);
+        await delay();
 
-         expect(reactionFn).toHaveBeenCalledTimes(1);
-         counter.dispose();
-         await delay();
-         expect(reactionFn).toHaveBeenCalledTimes(1);
-         expect(exitFn).toHaveBeenCalledTimes(1);
+        expect(reactionFn).toHaveBeenCalledTimes(1);
+        counter.dispose();
+        await delay();
+        expect(reactionFn).toHaveBeenCalledTimes(1);
+        expect(exitFn).toHaveBeenCalledTimes(1);
 
-     });
+    });
 
-     test('Dispose always has priority over value change trigger', async () => {
-         subscribe();
+    test('Dispose always has priority over value change trigger', async () => {
+        subscribe();
 
-         counter.value = Math.random();
-         counter.dispose();
+        counter.value = Math.random();
+        counter.dispose();
 
-          // reaction will be at the next microtask
-         expect(reactionFn).not.toHaveBeenCalled();
-         expect(exitFn).toHaveBeenCalledTimes(0);
+        // reaction will be at the next microtask
+        expect(reactionFn).not.toHaveBeenCalled();
+        expect(exitFn).toHaveBeenCalledTimes(0);
 
-         await delay();
-         expect(reactionFn).not.toHaveBeenCalled();
-         expect(exitFn).toHaveBeenCalledTimes(1);
+        await delay();
+        expect(reactionFn).not.toHaveBeenCalled();
+        expect(exitFn).toHaveBeenCalledTimes(1);
 
-         const counter2 = new DependencyStream(-1, {withReactionOnSubscribe: true});
-         subscribe(counter2);
+        const counter2 = new DependencyStream(-1, {withReactionOnSubscribe: true});
+        subscribe(counter2);
 
-         expect(reactionFn).not.toHaveBeenCalled();
-         expect(exitFn).toHaveBeenCalledTimes(1);
-         counter2.dispose();
+        expect(reactionFn).not.toHaveBeenCalled();
+        expect(exitFn).toHaveBeenCalledTimes(1);
+        counter2.dispose();
 
-         expect(reactionFn).not.toHaveBeenCalled();
-         expect(exitFn).toHaveBeenCalledTimes(1);
+        expect(reactionFn).not.toHaveBeenCalled();
+        expect(exitFn).toHaveBeenCalledTimes(1);
 
-         await delay();
-         expect(reactionFn).not.toHaveBeenCalled();
-         expect(exitFn).toHaveBeenCalledTimes(2);
-     });
+        await delay();
+        expect(reactionFn).not.toHaveBeenCalled();
+        expect(exitFn).toHaveBeenCalledTimes(2);
+    });
 
     test('Multiple subscribers', async () => {
         const subQty = 2;
@@ -195,6 +195,114 @@ describe('Dependency Stream', () => {
         expect(exitFn).toHaveBeenCalledTimes(0);
         await delay();
         expect(exitFn).toHaveBeenCalledTimes(subQty);
+    });
+
+    test('Subscriber can dispose stream', async () => {
+        async function subscribe() {
+            for await (let value of counter) {
+                counter.dispose();
+                reactionFn();
+            }
+            exitFn();
+        }
+
+        subscribe();
+        counter.value++;
+
+        await delay();
+        expect(reactionFn).toHaveBeenCalledTimes(1);
+        expect(exitFn).toHaveBeenCalledTimes(1);
+    });
+
+    test(`There is no cyclic error on dispose within reaction.
+                 Any subscriber can dispose stream, but all reaction should finish work`,
+        async () => {
+            let idThatDispose = 3;
+            let qty = 10;
+
+            async function subscribe(id: number) {
+                for await (let value of counter) {
+                    if (id === idThatDispose) {
+                        counter.dispose();
+                    }
+                    reactionFn();
+                }
+                exitFn();
+            }
+
+            for (let i = 0; i < qty; i++) {
+                subscribe(i + 1);
+            }
+
+            counter.value++;
+            await delay();
+            expect(reactionFn).toHaveBeenCalledTimes(qty);
+            expect(exitFn).toHaveBeenCalledTimes(qty)
+        });
+
+    test('External dispose should work', async () => {
+        const disposePromise = getPromise();
+        const iterator = counter[Symbol.asyncIterator]({
+            externalDispose: disposePromise,
+        })
+
+        async function subscribe() {
+            while(!(await iterator.next()).done) {
+                reactionFn();
+            }
+            exitFn();
+        }
+
+        subscribe();
+
+        let qty = 10;
+        for (let i = 0; i < qty; i++) {
+            counter.value++;
+            await delay();
+        }
+
+        disposePromise.resolve();
+        await delay();
+
+        expect(reactionFn).toHaveBeenCalledTimes(qty);
+        expect(exitFn).toHaveBeenCalledTimes(1);
+    });
+
+    test('External dispose should not cease work of other subscribers', async () => {
+        const disposePromise = getPromise();
+        const iterator = counter[Symbol.asyncIterator]({
+            externalDispose: disposePromise,
+        })
+
+        async function diposeSubscriber() {
+            while(!(await iterator.next()).done) {
+                reactionFn();
+            }
+            exitFn();
+        }
+
+        let subQty = 9;
+        diposeSubscriber();
+        for (let i = 0; i < subQty; i++) {
+            subscribe();
+        }
+
+        let qty = 10;
+        for (let i = 0; i < qty; i++) {
+            counter.value++;
+            await delay();
+        }
+
+        disposePromise.resolve();
+        await delay();
+        expect(reactionFn).toHaveBeenCalledTimes((subQty + 1) * qty);
+        expect(exitFn).toHaveBeenCalledTimes(1);
+
+        counter.dispose();
+        await delay();
+        expect(exitFn).toHaveBeenCalledTimes(subQty + 1)
+
+
     })
 
 });
