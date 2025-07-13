@@ -1,0 +1,1 @@
+export type IJestMockFn = ReturnType<typeof jest.fn>;

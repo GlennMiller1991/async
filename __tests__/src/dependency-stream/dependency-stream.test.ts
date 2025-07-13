@@ -1,11 +1,12 @@
 import {delay, DependencyStream, getPromise} from "@src";
+import {IJestMockFn} from "@utils";
 
 describe('Dependency Stream', () => {
     type IStreamType = number;
     const initialValue: IStreamType = 1;
     let counter: DependencyStream<IStreamType>;
-    let reactionFn: ReturnType<typeof jest.fn>;
-    let exitFn: ReturnType<typeof jest.fn>;
+    let reactionFn: IJestMockFn;
+    let exitFn: IJestMockFn;
 
     async function subscribe(stream: DependencyStream = counter) {
         for await (let value of stream) {
@@ -19,7 +20,7 @@ describe('Dependency Stream', () => {
         counter = new DependencyStream(initialValue);
         reactionFn = jest.fn();
         exitFn = jest.fn();
-    })
+    });
     test('Dependency Stream should be of defined type', () => {
         expect(counter).toBeInstanceOf(DependencyStream);
         expect(counter.value).toBeDefined();
@@ -247,7 +248,7 @@ describe('Dependency Stream', () => {
         })
 
         async function subscribe() {
-            while(!(await iterator.next()).done) {
+            while (!(await iterator.next()).done) {
                 reactionFn();
             }
             exitFn();
@@ -275,7 +276,7 @@ describe('Dependency Stream', () => {
         })
 
         async function diposeSubscriber() {
-            while(!(await iterator.next()).done) {
+            while (!(await iterator.next()).done) {
                 reactionFn();
             }
             exitFn();
@@ -300,9 +301,7 @@ describe('Dependency Stream', () => {
 
         counter.dispose();
         await delay();
-        expect(exitFn).toHaveBeenCalledTimes(subQty + 1)
-
-
+        expect(exitFn).toHaveBeenCalledTimes(subQty + 1);
     })
 
 });
