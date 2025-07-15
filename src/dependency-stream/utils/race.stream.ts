@@ -1,8 +1,8 @@
-import {DependencyStream} from "../dependency-stream.ts";
+import {Dependency} from "../dependency.ts";
 import {symAI} from "../../constants.ts";
 import {PromiseConfiguration} from "../../promise-configuration.ts";
 
-export function raceStream<TArray extends DependencyStream[]>(...deps: NoInfer<TArray>) {
+export function raceStream<TArray extends Dependency[]>(...deps: NoInfer<TArray>) {
     let selfDisposePromise = new PromiseConfiguration<{done: true, value: void}>();
     let isDisposed = false;
     const streams = deps.map((dep) => dep[symAI]({

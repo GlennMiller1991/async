@@ -1,12 +1,12 @@
-import {raceStream, DependencyStream} from "../../../index";
+import {raceStream, Dependency} from "../../../index";
 import {Dispatch, SetStateAction, useEffect, useState} from "react";
 
 class StreamController {
     setValue?: Dispatch<SetStateAction<any>>
-    streams: DependencyStream[];
+    streams: Dependency[];
     iterator!: ReturnType<typeof raceStream>
 
-    constructor(...streams: DependencyStream[]) {
+    constructor(...streams: Dependency[]) {
         this.streams = streams;
         this.init()
     }
@@ -24,7 +24,7 @@ class StreamController {
     }
 }
 
-export function useStream(...streams: DependencyStream[]) {
+export function useStream(...streams: Dependency[]) {
 
     const [value, setValue] = useState(streams.map(s => s.value));
     const [obj] = useState<{controller?: StreamController}>(() => ({controller: new StreamController(...streams)}))

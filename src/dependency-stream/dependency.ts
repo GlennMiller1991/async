@@ -1,26 +1,9 @@
-import {IDependencyStream, IIteratorOwner, IStreamIterator} from "./contracts.ts";
+import {IAllStreamConfig, IThisStreamConfig} from "./contracts.ts";
 import {PromiseConfiguration} from "../promise-configuration.ts";
-import {symAI} from "../constants.js";
+import {DependencyStream} from "./dependency.stream.ts";
+import {baseComparer} from "./utils.ts";
 
-interface IIsEquals<T> {
-    (prev: T, cur: T): boolean;
-}
-
-function baseComparer<T>(prev: T, cur: T) {
-    return prev === cur;
-}
-
-type IAllStreamConfig<T> = {
-    withCustomEquality: IIsEquals<T>,
-    withReactionOnSubscribe: boolean,
-}
-
-type IThisStreamConfig = Partial<{
-    withReactionOnSubscribe: boolean,
-    externalDispose: PromiseConfiguration<any>,
-}>
-
-export class DependencyStream<T = any> implements IIteratorOwner<T> {
+export class Dependency<T = any> {
     private reactionPromise: undefined | PromiseConfiguration<T>;
     private abortPromise = new PromiseConfiguration();
     private config: IAllStreamConfig<T>;
@@ -53,23 +36,11 @@ export class DependencyStream<T = any> implements IIteratorOwner<T> {
         return this._value;
     }
 
-    getStream(this: DependencyStream<T>): IDependencyStream {
-        const selfDispose = new PromiseConfiguration();
-        const iterator = this[symAI]({externalDispose: selfDispose});
-        return {
-            get isDisposed() {
-                return iterator.isDisposed;
-            },
-            dispose: () => selfDispose.resolve(),
-            [symAI]: () => ({
-                next: () => {
-                    return iterator.next();
-                }
-            })
-        }
+    getStream(this: Dependency<T>) {
+        return new DependencyStream<T>(this)
     }
 
-    [Symbol.asyncIterator](this: DependencyStream<T>, thisStreamConfig: IThisStreamConfig = {}): IStreamIterator<T> {
+    [Symbol.asyncIterator](this: Dependency<T>, thisStreamConfig: IThisStreamConfig = {}) {
         const totalDispose = this.abortPromise;
         const externalPromises: Promise<any>[] = [totalDispose.promise];
         let firstPromise: PromiseConfiguration<T> | undefined;
@@ -105,6 +76,7 @@ export class DependencyStream<T = any> implements IIteratorOwner<T> {
                     this.reactionPromise.promise,
                 ]);
 
+
                 if (totalDispose.isFulfilled || thisStreamConfig.externalDispose?.isFulfilled) {
                     isDisposed = true;
                     return {done: true} as { done: true, value: void };
@@ -125,12 +97,9 @@ export class DependencyStream<T = any> implements IIteratorOwner<T> {
         };
     }
 
-    dispose(this: DependencyStream<T>) {
+    dispose(this: Dependency<T>) {
         this.abortPromise.resolve();
         this.abortPromise = new PromiseConfiguration();
         this.reactionPromise = undefined;
     }
 }
-
-
-

@@ -1,14 +1,14 @@
-import {delay, DependencyStream, PromiseConfiguration} from "@src";
+import {delay, Dependency, PromiseConfiguration} from "@src";
 import {IJestMockFn} from "@utils";
 
 describe('Dependency Stream', () => {
     type IStreamType = number;
     const initialValue: IStreamType = 1;
-    let counter: DependencyStream<IStreamType>;
+    let counter: Dependency<IStreamType>;
     let reactionFn: IJestMockFn;
     let exitFn: IJestMockFn;
 
-    async function subscribe(stream: DependencyStream = counter) {
+    async function subscribe(stream: Dependency = counter) {
         for await (let value of stream) {
             reactionFn(value);
         }
@@ -17,12 +17,12 @@ describe('Dependency Stream', () => {
 
     beforeEach(() => {
         counter?.dispose();
-        counter = new DependencyStream(initialValue);
+        counter = new Dependency(initialValue);
         reactionFn = jest.fn();
         exitFn = jest.fn();
     });
     test('Dependency Stream should be of defined type', () => {
-        expect(counter).toBeInstanceOf(DependencyStream);
+        expect(counter).toBeInstanceOf(Dependency);
         expect(counter.value).toBeDefined();
         expect(counter.value).toBeDefined();
         expect(counter.dispose).toBeDefined();
@@ -30,13 +30,13 @@ describe('Dependency Stream', () => {
     });
 
     test('Stream should store initial value', () => {
-        let counter: DependencyStream;
+        let counter: Dependency;
         for (let init of [
             1, 'asdf', null, NaN, Symbol('test'),
             BigInt(10), {}, [], new Map(), new Set(),
-            new DependencyStream(1), undefined
+            new Dependency(1), undefined
         ]) {
-            counter = new DependencyStream(init);
+            counter = new Dependency(init);
             expect(counter.value).toBe(init);
         }
     });
@@ -107,7 +107,7 @@ describe('Dependency Stream', () => {
             return a.string === b.string && a.counter === b.counter;
         }
 
-        const objectStream = new DependencyStream(initial, {withCustomEquality: isEqual});
+        const objectStream = new Dependency(initial, {withCustomEquality: isEqual});
 
         const outerQty = 10;
         const innerQty = 10;
@@ -137,7 +137,7 @@ describe('Dependency Stream', () => {
     });
 
     test('Reaction on subscribe', async () => {
-        const counter = new DependencyStream(0, {withReactionOnSubscribe: true});
+        const counter = new Dependency(0, {withReactionOnSubscribe: true});
 
         subscribe(counter);
         await delay();
@@ -164,7 +164,7 @@ describe('Dependency Stream', () => {
         expect(reactionFn).not.toHaveBeenCalled();
         expect(exitFn).toHaveBeenCalledTimes(1);
 
-        const counter2 = new DependencyStream(-1, {withReactionOnSubscribe: true});
+        const counter2 = new Dependency(-1, {withReactionOnSubscribe: true});
         subscribe(counter2);
 
         expect(reactionFn).not.toHaveBeenCalled();
@@ -304,6 +304,26 @@ describe('Dependency Stream', () => {
         expect(exitFn).toHaveBeenCalledTimes(subQty + 1);
     });
 
-    test('getStream')
+    test('Can subscribe again after dispose', async () => {
+        let qty = 10;
+        async function subscribeAgain() {
+            subscribe();
+
+            for (let i = 0; i < qty; i++) {
+                counter.value++;
+                await delay();
+            }
+
+            counter.dispose();
+            await delay();
+        }
+
+        let subQty = 2;
+        for (let i = 0; i < subQty; i++) {
+            await subscribeAgain();
+            expect(reactionFn).toHaveBeenCalledTimes((i + 1) * qty);
+            expect(exitFn).toHaveBeenCalledTimes(i + 1);
+        }
+    });
 
 });

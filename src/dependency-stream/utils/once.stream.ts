@@ -1,26 +1,20 @@
-import {DependencyStream} from "../dependency-stream.ts";
-import {PromiseConfiguration} from "../../promise-configuration.ts";
+import {Dependency} from "../dependency.ts";
 import {IDependencyStream} from "../contracts.ts";
 import {symAI} from "../../constants.ts";
 
-export function onceStream<T>(dep: DependencyStream<T>): IDependencyStream<T> {
-    const externalDispose = new PromiseConfiguration();
-    const iterator = dep[symAI]({externalDispose});
-
-    function isDisposed() {
-        return externalDispose.isFulfilled || iterator.isDisposed;
-    }
-
+export function onceStream<T>(dep: Dependency<T>): IDependencyStream<T> {
+    const stream = dep.getStream();
+    const iterator = stream[symAI]();
     return {
         get isDisposed() {
-            return isDisposed();
+            return stream.isDisposed;
         },
-        dispose: externalDispose.resolve,
+        dispose: () => stream.dispose(),
         [symAI]() {
             return {
                 next: async () => {
                     const result = await iterator.next();
-                    if (!isDisposed()) externalDispose.resolve();
+                    if (!result.done) stream.dispose()
                     return result;
                 }
             }
