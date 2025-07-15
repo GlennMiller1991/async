@@ -2,7 +2,6 @@
   "compilerOptions": {
     "isolatedModules": true,
     "esModuleInterop": true,
-
     "baseUrl": ".",
     "paths": {
       "@src": ["../src"],

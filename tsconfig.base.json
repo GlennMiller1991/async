@@ -17,6 +17,7 @@
     "allowJs": false,
 
     // emit
+    "rewriteRelativeImportExtensions": true,
     "target": "ESNext",
     "noEmitOnError": true,
     "removeComments": false,

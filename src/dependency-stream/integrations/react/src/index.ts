@@ -1,1 +1,1 @@
-export * from './use-stream';
+export * from './use-stream.ts';

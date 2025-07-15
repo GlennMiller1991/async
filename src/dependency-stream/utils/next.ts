@@ -1,5 +1,5 @@
-import {DependencyStream} from "../dependency-stream";
-import {symAI} from "../../constants";
+import {DependencyStream} from "../dependency-stream.ts";
+import {symAI} from "../../constants.ts";
 
 const StreamFinishError = new Error("Stream is done");
 

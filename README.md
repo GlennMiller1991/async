@@ -1,7 +1,5 @@
 # Async tools
-
-## Disclaimer
-Now this package is CommonJS module but should be an ESM.
+R&D async tools tree-shakable ES module
 
 ## Installation
 You can install this package with your favorite package manager.<br/>

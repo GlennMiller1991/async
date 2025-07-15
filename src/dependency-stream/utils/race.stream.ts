@@ -1,6 +1,6 @@
-import {DependencyStream} from "../dependency-stream";
-import {symAI} from "../../constants";
-import {getPromise} from "../../get-promise";
+import {DependencyStream} from "../dependency-stream.ts";
+import {symAI} from "../../constants.ts";
+import {getPromise} from "../../get-promise.ts";
 
 export function raceStream<TArray extends DependencyStream[]>(...deps: NoInfer<TArray>) {
     let selfDisposePromise = getPromise<{done: true, value: void}>();

@@ -1,4 +1,4 @@
-import {getPromise} from "./get-promise";
+import {getPromise} from "./get-promise.ts";
 
 export function delay(ms: number, syncKey: 'sync'): void;
 export function delay(ms?: number): Promise<void>;

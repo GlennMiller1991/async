@@ -1,5 +1,5 @@
-import {getPromise, IPromiseConfiguration} from "../get-promise";
-import {IIteratorOwner, IStreamIterator} from "./contracts";
+import {getPromise, IPromiseConfiguration} from "../get-promise.ts";
+import {IIteratorOwner, IStreamIterator} from "./contracts.ts";
 
 interface IIsEquals<T> {
     (prev: T, cur: T): boolean;

@@ -2,9 +2,8 @@
 {
   "extends": "./tsconfig.base.json",
   "compilerOptions": {
-    "module": "CommonJS",
-    "moduleResolution": "node",
-    "stripInternal": true,
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
   },
 }
 // @formatter:on

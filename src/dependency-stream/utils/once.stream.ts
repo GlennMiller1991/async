@@ -1,7 +1,7 @@
-import {DependencyStream} from "../dependency-stream";
-import {getPromise} from "../../get-promise";
-import {IStreamOwner} from "../contracts";
-import {symAI} from "../../constants";
+import {DependencyStream} from "../dependency-stream.ts";
+import {getPromise} from "../../get-promise.ts";
+import {IStreamOwner} from "../contracts.ts";
+import {symAI} from "../../constants.ts";
 
 export function onceStream<T>(dep: DependencyStream<T>): IStreamOwner<T> {
     const externalDispose = getPromise();

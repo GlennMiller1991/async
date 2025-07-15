@@ -1,3 +1,3 @@
-export * from "./once.stream";
-export * from "./race.stream";
-export * from "./next";
+export * from "./once.stream.ts";
+export * from "./race.stream.ts";
+export * from "./next.ts";
