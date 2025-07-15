@@ -1,11 +1,11 @@
-import {getPromise} from "../../src";
+import {PromiseConfiguration} from "@src";
 
 describe('getPromise', () => {
     type IPromiseResult = 1;
     const error = new Error('promise rejecting');
-    let promiseConf: ReturnType<typeof getPromise<IPromiseResult>>;
+    let promiseConf: PromiseConfiguration<IPromiseResult>;
     beforeEach(() => {
-        promiseConf = getPromise<IPromiseResult>();
+        promiseConf = new PromiseConfiguration<IPromiseResult>();
     });
 
     test('getPromise should give result', () => {

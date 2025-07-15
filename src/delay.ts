@@ -1,4 +1,4 @@
-import {getPromise} from "./get-promise.ts";
+import {PromiseConfiguration} from "./get-promise.ts";
 
 export function delay(ms: number, syncKey: 'sync'): void;
 export function delay(ms?: number): Promise<void>;
@@ -25,7 +25,7 @@ Object.defineProperty(delay, 'methods', {
             }
         },
         undefined: (ms: number) => {
-            const {promise, resolve} = getPromise();
+            const {promise, resolve} = new PromiseConfiguration();
             setTimeout(() => {
                 resolve();
             }, ms);

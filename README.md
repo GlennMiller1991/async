@@ -19,15 +19,15 @@ await delay(number);
 delay(number, 'sync');
 ```
 
-### getPromise
-getPromise is a function that creates and returns promise, its fulfillment functions
-and status flags.
-Returned type is:
+### PromiseConfiguration
+PromiseConfiguration is a class that creates and provide promise, 
+its fulfillment functions and status flags.
+Instance of the class is represented by the following type:
 ```typescript
 type IPromiseConfiguration<T> = {
-    resolve(arg: T): void, // function that resolves promise
-    reject(err: Error): void, // function that rejects promise
-    promise: Promise<T>,        // promise itself
+    readonly resolve: (arg: T) => void, // function that resolves promise
+    readonly reject: (err: Error) => void, // function that rejects promise
+    readonly promise: Promise<T>,        // promise itself
     readonly isPending: boolean, // promise status flag
     readonly isFulfilled: boolean, // reverted promise status flag
 } 

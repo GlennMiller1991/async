@@ -1,5 +1,5 @@
-import {getPromise, IPromiseConfiguration} from "../get-promise.ts";
 import {IIteratorOwner, IStreamIterator} from "./contracts.ts";
+import {PromiseConfiguration} from "../get-promise.ts";
 
 interface IIsEquals<T> {
     (prev: T, cur: T): boolean;
@@ -16,12 +16,12 @@ type IAllStreamConfig<T> = {
 
 type IThisStreamConfig = Partial<{
     withReactionOnSubscribe: boolean,
-    externalDispose: IPromiseConfiguration<any>,
+    externalDispose: PromiseConfiguration<any>,
 }>
 
 export class DependencyStream<T = any> implements IIteratorOwner<T> {
-    private reactionPromise: undefined | IPromiseConfiguration<T>;
-    private abortPromise = getPromise();
+    private reactionPromise: undefined | PromiseConfiguration<T>;
+    private abortPromise = new PromiseConfiguration();
     private config: IAllStreamConfig<T>;
 
     constructor(private _value: T, config: Partial<IAllStreamConfig<T>> = {}) {
@@ -55,11 +55,11 @@ export class DependencyStream<T = any> implements IIteratorOwner<T> {
     [Symbol.asyncIterator](this: DependencyStream<T>, thisStreamConfig: IThisStreamConfig = {}): IStreamIterator<T> {
         const totalDispose = this.abortPromise;
         const externalPromises: Promise<any>[] = [totalDispose.promise];
-        let firstPromise: IPromiseConfiguration<T> | undefined;
+        let firstPromise: PromiseConfiguration<T> | undefined;
         const withReactionOnSubscribe = this.config.withReactionOnSubscribe || thisStreamConfig.withReactionOnSubscribe;
 
         if (withReactionOnSubscribe) {
-            firstPromise = getPromise<T>();
+            firstPromise = new PromiseConfiguration<T>();
             firstPromise.resolve(this.value);
             externalPromises.push(firstPromise.promise);
         }
@@ -79,7 +79,7 @@ export class DependencyStream<T = any> implements IIteratorOwner<T> {
             },
             next: async () => {
                 if (!this.reactionPromise) {
-                    this.reactionPromise = getPromise();
+                    this.reactionPromise = new PromiseConfiguration();
                     this._set(this._value);
                 }
 
@@ -110,7 +110,7 @@ export class DependencyStream<T = any> implements IIteratorOwner<T> {
 
     dispose(this: DependencyStream<T>) {
         this.abortPromise.resolve();
-        this.abortPromise = getPromise();
+        this.abortPromise = new PromiseConfiguration();
         this.reactionPromise = undefined;
     }
 }

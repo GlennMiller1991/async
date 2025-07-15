@@ -1,33 +1,35 @@
-export function getPromise<TReturn = void>() {
-    let resolve!: (value: TReturn) => void;
-    let reject!: (value: Error) => void;
-    let isPending: boolean = true;
-    let isFulfilled: boolean = false;
+export class PromiseConfiguration<TReturn = void> {
+    readonly promise!: Promise<TReturn>
+    _resolve!: (value: TReturn) => void;
+    _reject!: (value: Error) => void;
+    _isFulfilled: boolean = false;
 
-    const promise = new Promise<TReturn>((res, rej) => {
-        resolve = ((value: TReturn) => {
-            res(value);
-            isPending = false;
-            isFulfilled = true;
-        }) as typeof resolve;
-        reject = (error: Error) => {
-            rej(error);
-            isPending = false;
-            isFulfilled = true;
-        }
-    });
+    constructor() {
+        this.promise = new Promise<TReturn>((res, rej) => {
+            this._resolve = ((value: TReturn) => {
+                res(value);
+                this._isFulfilled = true;
+            });
+            this._reject = (error: Error) => {
+                rej(error);
+                this._isFulfilled = true;
+            }
+        });
+    }
 
-    return {
-        resolve,
-        reject,
-        get isPending() {
-            return isPending;
-        },
-        get isFulfilled() {
-            return isFulfilled;
-        },
-        promise
+    get reject() {
+        return this._reject
+    }
+
+    get resolve() {
+        return this._resolve
+    }
+
+    get isFulfilled() {
+        return this._isFulfilled
+    }
+
+    get isPending() {
+        return !this.isFulfilled;
     }
 }
-
-export type IPromiseConfiguration<T = void> = ReturnType<typeof getPromise<T>>;

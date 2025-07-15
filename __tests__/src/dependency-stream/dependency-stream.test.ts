@@ -1,4 +1,4 @@
-import {delay, DependencyStream, getPromise} from "@src";
+import {delay, DependencyStream, PromiseConfiguration} from "@src";
 import {IJestMockFn} from "@utils";
 
 describe('Dependency Stream', () => {
@@ -242,7 +242,7 @@ describe('Dependency Stream', () => {
         });
 
     test('External dispose should work', async () => {
-        const disposePromise = getPromise();
+        const disposePromise = new PromiseConfiguration();
         const iterator = counter[Symbol.asyncIterator]({
             externalDispose: disposePromise,
         })
@@ -270,7 +270,7 @@ describe('Dependency Stream', () => {
     });
 
     test('External dispose should not cease work of other subscribers', async () => {
-        const disposePromise = getPromise();
+        const disposePromise = new PromiseConfiguration();
         const iterator = counter[Symbol.asyncIterator]({
             externalDispose: disposePromise,
         })
