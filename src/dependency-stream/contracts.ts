@@ -4,8 +4,6 @@ export interface IIteratorOwner<TValue = any> {
 }
 
 export type IStreamReturn = void;
-export type IStreamIteratorReturn = IteratorReturnResult<IStreamReturn>;
-export type IStreamIteratorYield<T> = IteratorYieldResult<T>;
 
 export interface IStreamIterator<TValue = any> {
     owner: IIteratorOwner<TValue>
@@ -15,7 +13,7 @@ export interface IStreamIterator<TValue = any> {
     next(): Promise<IteratorResult<TValue, IStreamReturn>>
 }
 
-export interface IStreamOwner<TValue = any> {
+export interface IDependencyStream<TValue = any> {
     dispose(): void;
     readonly isDisposed: boolean;
     [Symbol.asyncIterator](): AsyncIterator<TValue,  IStreamReturn>

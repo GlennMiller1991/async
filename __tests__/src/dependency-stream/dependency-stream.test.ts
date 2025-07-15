@@ -302,6 +302,8 @@ describe('Dependency Stream', () => {
         counter.dispose();
         await delay();
         expect(exitFn).toHaveBeenCalledTimes(subQty + 1);
-    })
+    });
+
+    test('getStream')
 
 });

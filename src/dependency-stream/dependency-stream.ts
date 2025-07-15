@@ -1,5 +1,6 @@
-import {IIteratorOwner, IStreamIterator} from "./contracts.ts";
-import {PromiseConfiguration} from "../get-promise.ts";
+import {IDependencyStream, IIteratorOwner, IStreamIterator} from "./contracts.ts";
+import {PromiseConfiguration} from "../promise-configuration.ts";
+import {symAI} from "../constants.js";
 
 interface IIsEquals<T> {
     (prev: T, cur: T): boolean;
@@ -52,6 +53,22 @@ export class DependencyStream<T = any> implements IIteratorOwner<T> {
         return this._value;
     }
 
+    getStream(this: DependencyStream<T>): IDependencyStream {
+        const selfDispose = new PromiseConfiguration();
+        const iterator = this[symAI]({externalDispose: selfDispose});
+        return {
+            get isDisposed() {
+                return iterator.isDisposed;
+            },
+            dispose: () => selfDispose.resolve(),
+            [symAI]: () => ({
+                next: () => {
+                    return iterator.next();
+                }
+            })
+        }
+    }
+
     [Symbol.asyncIterator](this: DependencyStream<T>, thisStreamConfig: IThisStreamConfig = {}): IStreamIterator<T> {
         const totalDispose = this.abortPromise;
         const externalPromises: Promise<any>[] = [totalDispose.promise];
@@ -90,7 +107,7 @@ export class DependencyStream<T = any> implements IIteratorOwner<T> {
 
                 if (totalDispose.isFulfilled || thisStreamConfig.externalDispose?.isFulfilled) {
                     isDisposed = true;
-                    return {done: true} as {done: true, value: void};
+                    return {done: true} as { done: true, value: void };
                 }
 
                 if (firstPromise) {
