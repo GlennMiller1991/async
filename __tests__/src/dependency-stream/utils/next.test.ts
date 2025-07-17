@@ -1,4 +1,4 @@
-import {delay, Dependency, next} from "@src";
+import {delay, Dependency, next, StreamFinishError} from "@src";
 
 describe('next util', () => {
     type IValueType = number;
@@ -24,7 +24,7 @@ describe('next util', () => {
         counter = new Dependency(initialValue);
     })
     test('next should work', async () => {
-        let promise = next(counter);
+        let promise = next(counter).promise;
 
         iterateSync();
 
@@ -32,8 +32,43 @@ describe('next util', () => {
         expect(await promise).toBeDefined();
 
         iterateAsync(10);
-        promise = next(counter);
+        promise = next(counter).promise;
 
         expect(await promise).toBeDefined();
-    })
+    });
+
+    test('next should be disposable by itself and dependency', async () => {
+        let promise: Promise<any>;
+        let dispose: Function;
+
+        let disposeFn = [
+            () => dispose(),
+            () => {
+                counter.value++;
+                dispose();
+            },
+            () => counter.dispose(),
+            () => {
+                counter.value++;
+                counter.dispose();
+            }
+        ]
+
+        for (let fn of disposeFn) {
+            let temp = next(counter);
+            promise = temp.promise;
+            dispose = temp.dispose;
+            fn();
+
+            let isErrorThatWas: Error | undefined;
+            try {
+                await promise;
+            } catch (err) {
+                isErrorThatWas = err;
+            }
+
+            expect(isErrorThatWas).toBeDefined();
+            expect(isErrorThatWas).toBe(StreamFinishError);
+        }
+    });
 })
