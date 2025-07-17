@@ -1,5 +1,5 @@
 # Async tools
-R&D async tools tree-shakable ES module
+Tree-shakable ES module with async tools.
 
 ## Installation
 You can install this package with your favorite package manager.<br/>
