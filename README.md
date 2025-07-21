@@ -67,20 +67,25 @@ setInterval(() => {
 }, 1000)
 ```
 
+#### Stream utils
+##### onceStream
+##### raceStream
+##### next
+
 #### Framework integrations
 ##### React
-Of course, there is a React integration via useStream hook:
+Of course, there is a React integration via stream hooks.
+For example, here is classic react counter implementation via useRaceStream hook.
 
 ```typescript jsx
 type IController = {
-    controller: SomeController,
+    dependecy: Dependency,
 }
 export const Counter: React.FC<ITest> = React.memo(({
-                                                        controller,
+                                                        dependency,
                                                     }) => {
     // num is an instance of DependencyStream
-    const num = controller.num;
-    const {value, dispose} = useStream(num);
+    const {value, dispose} = useRaceStream({dependency});
 
     // resolving promises on component unmounting
     // This is won't cause of rerender
@@ -91,7 +96,7 @@ export const Counter: React.FC<ITest> = React.memo(({
             <button className={"incrementer"}
                 // Now result is array of streams values
                 // It should be object
-                    onClick={() => num.set(value![0] + 1)}>
+                    onClick={() => dependency.value++}>
                 +
             </button>
 
@@ -100,7 +105,7 @@ export const Counter: React.FC<ITest> = React.memo(({
                     // Now result is array of streams values
                     // It should be object                    
                 }
-                {value![0]}
+                {value.dependency}
             </div>
         </div>
     )
