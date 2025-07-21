@@ -25,7 +25,7 @@
     "clearModules": "rm node_modules -rf || true",
     "clearAll": "npm run clearDist && npm run clearModules",
     "build": "cd src/dependency-stream/integrations/react && npm run build && cd ../../../../ && npm run clearAll && npm i && mkdir dist && tsc",
-    "test": "jest --config=./__tests__/jest.config.cjs",
+    "test": "node --expose-gc node_modules/.bin/jest --config=./__tests__/jest.config.cjs",
     "postVersionCommit": "git commit -m='post version commit' || true",
     "postVersionPush": "git push || true",
     "patch": "npm version patch && npm run postVersionCommit && npm run postVersionPush",
