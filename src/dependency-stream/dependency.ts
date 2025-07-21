@@ -1,4 +1,4 @@
-import {IAllStreamConfig, IThisStreamConfig} from "./contracts.ts";
+import {IAllStreamConfig, IStreamIterator, IThisStreamConfig} from "./contracts.ts";
 import {PromiseConfiguration} from "../promise-configuration.ts";
 import {DependencyStream} from "./dependency.stream.ts";
 import {baseComparer} from "./utils.ts";
@@ -40,7 +40,7 @@ export class Dependency<T = any> {
         return new DependencyStream<T>(this)
     }
 
-    [Symbol.asyncIterator](this: Dependency<T>, thisStreamConfig: IThisStreamConfig = {}) {
+    [Symbol.asyncIterator](this: Dependency<T>, thisStreamConfig: IThisStreamConfig = {}): IStreamIterator<T> {
         const totalDispose = this.abortPromise;
         const externalPromises: Promise<any>[] = [totalDispose.promise];
         let firstPromise: PromiseConfiguration<T> | undefined;
