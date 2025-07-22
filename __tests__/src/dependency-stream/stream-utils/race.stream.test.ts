@@ -25,6 +25,7 @@ describe('Race stream', () => {
         exitFn = jest.fn();
         rs = raceStream({number: counter_num, string: counter_str});
     });
+
     test('race stream should work', async () => {
         subscribe();
 
@@ -40,7 +41,47 @@ describe('Race stream', () => {
 
         expect(reactionFn).toHaveBeenCalledTimes(10);
         expect(exitFn).toHaveBeenCalledTimes(1);
+    });
 
+    test('should work once on all changes within current microtask', async () => {
+        subscribe();
+        for (let i = 0; i < 10; i++) {
+            initialValue++;
+            counter_num.value = initialValue;
+            counter_str.value = String(initialValue);
+        }
 
+        await delay();
+        expect(reactionFn).toHaveBeenCalledTimes(1);
+        expect(exitFn).toHaveBeenCalledTimes(0);
+
+        rs.dispose();
+        await delay();
+        expect(reactionFn).toHaveBeenCalledTimes(1);
+        expect(exitFn).toHaveBeenCalledTimes(1);
+    });
+
+    test('should be disposed on dispose one of dependencies', async () => {
+        subscribe();
+
+        counter_num.dispose();
+        await delay();
+        expect(reactionFn).toHaveBeenCalledTimes(0);
+        expect(exitFn).toHaveBeenCalledTimes(1);
+    });
+
+    test('should react on change of one of dependencies', async () => {
+        subscribe();
+
+        for (let i = 0; i < 10; i++) {
+            counter_num.value++;
+            await delay();
+        }
+
+        rs.dispose();
+        await delay();
+
+        expect(reactionFn).toHaveBeenCalledTimes(10);
+        expect(exitFn).toHaveBeenCalledTimes(1);
     })
 })

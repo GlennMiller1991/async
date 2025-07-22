@@ -11,7 +11,7 @@ describe("delay", () => {
 
     test('async', async () => {
         const start = performance.now();
-        const value = 1;
+        const value = 10;
         const promise = delay(value);
         await promise;
         expect(performance.now() - start).toBeGreaterThanOrEqual(value);
