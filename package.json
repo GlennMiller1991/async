@@ -21,8 +21,8 @@
     "tsconfig.json"
   ],
   "scripts": {
-    "clearDist": "rm dist -rf || true",
-    "clearModules": "rm node_modules -rf || true",
+    "clearDist": "rm dist -r || true",
+    "clearModules": "rm node_modules -r || true",
     "clearAll": "npm run clearDist && npm run clearModules",
     "build": "npm run clearAll && npm i && mkdir dist && tsc",
     "test": "node --expose-gc node_modules/.bin/jest --config=./__tests__/jest.config.cjs",
