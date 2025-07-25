@@ -1,5 +1,5 @@
 import {delay, Dependency, raceStream} from "@src";
-import {IDependencyStream} from "../../../../src/dependency-stream/contracts";
+import {IDependencyStream} from "../../../../src/dependency/contracts";
 import {IJestMockFn} from "@utils";
 
 describe('Race stream', () => {

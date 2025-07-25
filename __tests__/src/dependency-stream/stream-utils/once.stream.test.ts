@@ -1,6 +1,6 @@
 import {delay, Dependency, onceStream} from "@src";
 import {IJestMockFn} from "@utils";
-import {IDependencyStream} from "../../../../src/dependency-stream/contracts";
+import {IDependencyStream} from "../../../../src/dependency/contracts";
 
 describe('Dependency stream. Once', () => {
     type IStreamType = number;

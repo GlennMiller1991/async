@@ -2,6 +2,7 @@ import {IAllStreamConfig, IStreamIterator, IThisStreamConfig} from "./contracts.
 import {PromiseConfiguration} from "../promise-configuration.ts";
 import {DependencyStream} from "./dependency.stream.ts";
 import {baseComparer} from "./utils.ts";
+import {setDep} from "./global.ts";
 
 export class Dependency<T = any> {
     private reactionPromise: undefined | PromiseConfiguration<T>;
@@ -25,7 +26,6 @@ export class Dependency<T = any> {
             this.reactionPromise.resolve(v);
             this.reactionPromise = undefined;
         }
-
     }
 
     set value(v: T) {
@@ -33,6 +33,7 @@ export class Dependency<T = any> {
     }
 
     get value() {
+        setDep(this);
         return this._value;
     }
 
@@ -103,3 +104,4 @@ export class Dependency<T = any> {
         this.reactionPromise = undefined;
     }
 }
+
