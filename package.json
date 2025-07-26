@@ -1,6 +1,6 @@
 {
   "name": "@fbltd/async",
-  "version": "1.0.23",
+  "version": "1.0.24",
   "description": "Miscellaneous async utils",
   "homepage": "https://github.com/GlennMiller1991/async",
   "type": "module",
