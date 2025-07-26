@@ -1,20 +1,23 @@
-import {watchDeps} from "../global.ts";
-import {symAI} from "../../constants.ts";
+import {runFnWithDepCollection} from "../global.ts";
 
 /**
  * @deprecated
  */
 export function reaction<T>(fn: () => T) {
+    const ref = {done: false};
     return {
         [Symbol.asyncIterator]: () => {
-            let {result, deps} = watchDeps(fn);
+            let {result, deps} = runFnWithDepCollection(fn);
             return {
                 next: async () => {
-                    const dependencies = Array.from(deps);
-                    const streams = dependencies.map(dep => dep[symAI]())
-                    await Promise.race(streams.map(s => s.next()));
+                    await Promise
+                        .race(Array
+                            .from(deps)
+                            .map(dep => dep.next(ref))
+                        );
+                    if (ref.done) return ref as {done: true, value?: never};
 
-                    ({result, deps} = watchDeps(fn));
+                    ({result, deps} = runFnWithDepCollection(fn));
 
                     return {done: false, value: result}
                 }

@@ -71,6 +71,7 @@ setInterval(() => {
 ##### onceStream
 ##### raceStream
 ##### next
+##### reaction
 
 #### Framework integrations
 ##### React

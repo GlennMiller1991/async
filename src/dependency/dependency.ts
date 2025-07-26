@@ -2,7 +2,7 @@ import {IAllStreamConfig, IStreamIterator, IThisStreamConfig} from "./contracts.
 import {PromiseConfiguration} from "../promise-configuration.ts";
 import {DependencyStream} from "./dependency.stream.ts";
 import {baseComparer} from "./utils.ts";
-import {setDep} from "./global.ts";
+import {collectDep} from "./global.ts";
 
 export class Dependency<T = any> {
     private reactionPromise: undefined | PromiseConfiguration<T>;
@@ -33,7 +33,7 @@ export class Dependency<T = any> {
     }
 
     get value() {
-        setDep(this);
+        collectDep(this);
         return this._value;
     }
 
@@ -67,10 +67,7 @@ export class Dependency<T = any> {
                 return isDisposed;
             },
             next: async () => {
-                if (!this.reactionPromise) {
-                    this.reactionPromise = new PromiseConfiguration();
-                    this._set(this._value);
-                }
+                this.reactionPromise = this.reactionPromise ?? new PromiseConfiguration();
 
                 await Promise.race([
                     ...externalPromises,
@@ -98,10 +95,38 @@ export class Dependency<T = any> {
         };
     }
 
+
+
+    private _race: Promise<void> | undefined;
+     async next(ref: {done?: boolean} = {}) {
+         const abortPromise = this.abortPromise;
+         if (!this._race) {
+             this.reactionPromise = this.reactionPromise ?? new PromiseConfiguration();
+             this._race = Promise.race([
+                 abortPromise.promise,
+                 this.reactionPromise.promise,
+             ]) as Promise<void>;
+         }
+         let race = this._race;
+         await race;
+         this._race = undefined;
+
+        if (abortPromise.isFulfilled) {
+            ref.done = true
+            return {done: true} as {done: true, value?: never};
+        }
+
+        return {
+            done: false,
+            get value(): T {
+                return this.value
+            }
+        }
+    }
+
     dispose(this: Dependency<T>) {
         this.abortPromise.resolve();
         this.abortPromise = new PromiseConfiguration();
         this.reactionPromise = undefined;
     }
 }
-

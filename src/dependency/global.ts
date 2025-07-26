@@ -6,7 +6,7 @@ const global = {
 }
 
 const notImplemented = new Error('Watching while watching is not implemented');
-export function watchDeps<T>(fn: () => T): {result: T, deps: typeof global.dependencies} {
+export function runFnWithDepCollection<T>(fn: () => T): {result: T, deps: typeof global.dependencies} {
     if (global.watchFlag) {
         throw notImplemented;
     }
@@ -22,7 +22,7 @@ export function watchDeps<T>(fn: () => T): {result: T, deps: typeof global.depen
     }
 }
 
-export function setDep(dep: Dependency) {
+export function collectDep(dep: Dependency) {
     if (!global.watchFlag) return;
     global.dependencies.add(dep);
 }
