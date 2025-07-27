@@ -1,7 +1,7 @@
 import {delay, Dependency, PromiseConfiguration} from "@src";
 import {IJestMockFn} from "@utils";
 
-describe('Dependency Stream', () => {
+describe('Dependency', () => {
     type IStreamType = number;
     const initialValue: IStreamType = 1;
     let counter: Dependency<IStreamType>;
@@ -150,7 +150,7 @@ describe('Dependency Stream', () => {
 
     });
 
-    test('Dispose always has priority over value change trigger', async () => {
+    test('Dispose has priority over value change trigger', async () => {
         subscribe();
 
         counter.value = Math.random();
@@ -163,20 +163,6 @@ describe('Dependency Stream', () => {
         await delay();
         expect(reactionFn).not.toHaveBeenCalled();
         expect(exitFn).toHaveBeenCalledTimes(1);
-
-        const counter2 = new Dependency(-1, {withReactionOnSubscribe: true});
-        subscribe(counter2);
-
-        expect(reactionFn).not.toHaveBeenCalled();
-        expect(exitFn).toHaveBeenCalledTimes(1);
-        counter2.dispose();
-
-        expect(reactionFn).not.toHaveBeenCalled();
-        expect(exitFn).toHaveBeenCalledTimes(1);
-
-        await delay();
-        expect(reactionFn).not.toHaveBeenCalled();
-        expect(exitFn).toHaveBeenCalledTimes(2);
     });
 
     test('Multiple subscribers', async () => {
@@ -303,27 +289,4 @@ describe('Dependency Stream', () => {
         await delay();
         expect(exitFn).toHaveBeenCalledTimes(subQty + 1);
     });
-
-    test('Can subscribe again after dispose', async () => {
-        let qty = 10;
-        async function subscribeAgain() {
-            subscribe();
-
-            for (let i = 0; i < qty; i++) {
-                counter.value++;
-                await delay();
-            }
-
-            counter.dispose();
-            await delay();
-        }
-
-        let subQty = 2;
-        for (let i = 0; i < subQty; i++) {
-            await subscribeAgain();
-            expect(reactionFn).toHaveBeenCalledTimes((i + 1) * qty);
-            expect(exitFn).toHaveBeenCalledTimes(i + 1);
-        }
-    });
-
 });

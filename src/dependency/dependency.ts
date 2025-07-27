@@ -1,6 +1,5 @@
 import {IAllStreamConfig, IStreamIterator, IThisStreamConfig} from "./contracts.ts";
 import {PromiseConfiguration} from "../promise-configuration.ts";
-import {DependencyStream} from "./dependency.stream.ts";
 import {baseComparer} from "./utils.ts";
 import {collectDep} from "./global.ts";
 
@@ -18,6 +17,7 @@ export class Dependency<T = any> {
     }
 
     private _set(v: T) {
+        if (this.done) return;
         if (this.config.withCustomEquality(this._value, v)) {
             return;
         }
@@ -37,19 +37,18 @@ export class Dependency<T = any> {
         return this._value;
     }
 
-    getStream(this: Dependency<T>) {
-        return new DependencyStream<T>(this)
+    get done() {
+        return this.abortPromise.isFulfilled;
     }
 
     [Symbol.asyncIterator](this: Dependency<T>, thisStreamConfig: IThisStreamConfig = {}): IStreamIterator<T> {
-        const totalDispose = this.abortPromise;
-        const externalPromises: Promise<any>[] = [totalDispose.promise];
-        let firstPromise: PromiseConfiguration<T> | undefined;
+        const externalPromises: Promise<any>[] = [];
+        let firstPromise: PromiseConfiguration | undefined;
         const withReactionOnSubscribe = this.config.withReactionOnSubscribe || thisStreamConfig.withReactionOnSubscribe;
 
         if (withReactionOnSubscribe) {
-            firstPromise = new PromiseConfiguration<T>();
-            firstPromise.resolve(this.value);
+            firstPromise = new PromiseConfiguration();
+            firstPromise.resolve();
             externalPromises.push(firstPromise.promise);
         }
 
@@ -57,26 +56,23 @@ export class Dependency<T = any> {
             externalPromises.push(thisStreamConfig.externalDispose.promise);
         }
 
-        let isDisposed = false;
-
         const owner = this;
+        let done = false;
         return {
             owner,
             dispose: owner.dispose.bind(owner),
             get isDisposed() {
-                return isDisposed;
+                return done || owner.done;
             },
             next: async () => {
-                this.reactionPromise = this.reactionPromise ?? new PromiseConfiguration();
-
                 await Promise.race([
                     ...externalPromises,
-                    this.reactionPromise.promise,
+                    owner.next(),
                 ]);
 
 
-                if (totalDispose.isFulfilled || thisStreamConfig.externalDispose?.isFulfilled) {
-                    isDisposed = true;
+                if (this.done || thisStreamConfig.externalDispose?.isFulfilled) {
+                    done = true;
                     return {done: true} as { done: true, value: void };
                 }
 
@@ -95,24 +91,31 @@ export class Dependency<T = any> {
         };
     }
 
-
-
+    /**
+     * One race of value change and dependency dispose
+     * for all subscribers
+     */
     private _race: Promise<void> | undefined;
-     async next(ref: {done?: boolean} = {}) {
-         const abortPromise = this.abortPromise;
-         if (!this._race) {
-             this.reactionPromise = this.reactionPromise ?? new PromiseConfiguration();
-             this._race = Promise.race([
-                 abortPromise.promise,
-                 this.reactionPromise.promise,
-             ]) as Promise<void>;
-         }
-         let race = this._race;
+    private getOrCreateRace() {
+        if (!this._race) {
+            this.reactionPromise = this.reactionPromise ?? new PromiseConfiguration();
+            this._race = Promise.race([
+                this.abortPromise.promise,
+                this.reactionPromise.promise,
+            ]) as Promise<void>;
+        }
+        return this._race;
+    }
+
+    /**
+     * Another subscribe for current race
+     */
+    async next() {
+         let race = this.getOrCreateRace();
          await race;
          this._race = undefined;
 
-        if (abortPromise.isFulfilled) {
-            ref.done = true
+        if (this.done) {
             return {done: true} as {done: true, value?: never};
         }
 
@@ -126,7 +129,6 @@ export class Dependency<T = any> {
 
     dispose(this: Dependency<T>) {
         this.abortPromise.resolve();
-        this.abortPromise = new PromiseConfiguration();
         this.reactionPromise = undefined;
     }
 }

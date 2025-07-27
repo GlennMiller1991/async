@@ -55,6 +55,5 @@ describe('reaction', () => {
         await delay();
         expect(reactionFn).toHaveBeenCalledTimes(12);
         expect(exitFn).toHaveBeenCalledTimes(1);
-
     })
 })

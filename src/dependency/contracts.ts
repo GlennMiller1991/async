@@ -22,9 +22,22 @@ export interface IIsEquals<T> {
 
 export type IAllStreamConfig<T> = {
     withCustomEquality: IIsEquals<T>,
+    /**
+     * Reaction happens anyway right after current task
+     * wherever dependency was disposed
+     */
     withReactionOnSubscribe: boolean,
 }
 export type IThisStreamConfig = Partial<{
+    /**
+     * Reaction happens right after current task
+     * wherever dependency itself was disposed, but
+     * stream dispose has priority over first reaction
+     */
     withReactionOnSubscribe: boolean,
+    /**
+     * Dispose happens anyway right after current task,
+     * wherever value of dependency was changed
+     */
     externalDispose: PromiseConfiguration<any>,
 }>

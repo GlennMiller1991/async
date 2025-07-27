@@ -71,7 +71,35 @@ setInterval(() => {
 ##### onceStream
 ##### raceStream
 ##### next
+
 ##### reaction
+The most powerful util among all stream utils.
+Function is watching only for actual dependencies and does not react
+for dependencies that do not affect result value:
+```typescript
+let isDep1Ready = new Dependency(false);
+let isDep2Ready = new Dependency(false);
+let counter = new Dependency(0);
+
+// function that implicityly uses dependency instances
+let cachedFunction = () => {
+    if (isDep1Ready.value && isDep2Ready.value) {
+        return counter.value;
+    }
+    return undefined;
+}
+
+async function subscribe() {
+    for await (const value of reaction(cachedFunction)) {
+        reactionFn();
+    }
+    exitFn();
+}
+```
+The reaction is declared deprecated because a return value caching does not
+use optimal strategy. Moreover, ideally, reaction should give back a 
+dependency instance or something like it, that can provide an ability
+to be an observable for another reaction.
 
 #### Framework integrations
 ##### React

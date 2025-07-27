@@ -1,9 +1,10 @@
 import {Dependency} from "../dependency.ts";
 import {IDependencyStream} from "../contracts.ts";
 import {symAI} from "../../constants.ts";
+import {getStream} from "./get.stream.ts";
 
 export function onceStream<T>(dep: Dependency<T>): IDependencyStream<T> {
-    const stream = dep.getStream();
+    const stream = getStream(dep);
     const iterator = stream[symAI]();
     return {
         get isDisposed() {

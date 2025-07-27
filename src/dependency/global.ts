@@ -24,5 +24,6 @@ export function runFnWithDepCollection<T>(fn: () => T): {result: T, deps: typeof
 
 export function collectDep(dep: Dependency) {
     if (!global.watchFlag) return;
+    if (dep.done) return;
     global.dependencies.add(dep);
 }

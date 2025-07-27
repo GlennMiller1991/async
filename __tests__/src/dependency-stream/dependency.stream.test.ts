@@ -1,5 +1,6 @@
 import {delay, Dependency, DependencyStream} from "@src";
 import {IJestMockFn} from "@utils";
+import {getStream} from "../../../src/dependency/stream-utils/get.stream";
 
 describe('DependencyStream', () => {
     type IStreamType = number;
@@ -31,7 +32,7 @@ describe('DependencyStream', () => {
     });
 
     test('Dependency.getStream should work', async () => {
-        const stream = counter.getStream();
+        const stream = getStream(counter);
         subscribe(stream);
 
         await iterateCounter();
@@ -44,7 +45,7 @@ describe('DependencyStream', () => {
     });
 
     test('Cannot subscribe after dispose', async () => {
-        const stream = counter.getStream();
+        const stream = getStream(counter);
         subscribe(stream);
 
         await iterateCounter();
