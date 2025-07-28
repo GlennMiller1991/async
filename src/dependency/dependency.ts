@@ -2,6 +2,7 @@ import {IAllStreamConfig, IStreamIterator, IThisStreamConfig} from "./contracts.
 import {PromiseConfiguration} from "../promise-configuration.ts";
 import {baseComparer} from "./utils.ts";
 import {collectDep} from "./global.ts";
+import {symAI} from "../constants.ts";
 
 export class Dependency<T = any> {
     private reactionPromise: undefined | PromiseConfiguration<T>;
@@ -41,7 +42,7 @@ export class Dependency<T = any> {
         return this.abortPromise.isFulfilled;
     }
 
-    [Symbol.asyncIterator](this: Dependency<T>, thisStreamConfig: IThisStreamConfig = {}): IStreamIterator<T> {
+    [symAI](this: Dependency<T>, thisStreamConfig: IThisStreamConfig = {}): IStreamIterator<T> {
         const externalPromises: Promise<any>[] = [];
         let firstPromise: PromiseConfiguration | undefined;
         const withReactionOnSubscribe = this.config.withReactionOnSubscribe || thisStreamConfig.withReactionOnSubscribe;
@@ -125,6 +126,10 @@ export class Dependency<T = any> {
                 return this.value
             }
         }
+    }
+
+    get disposePromise() {
+        return this.abortPromise.promise;
     }
 
     dispose(this: Dependency<T>) {

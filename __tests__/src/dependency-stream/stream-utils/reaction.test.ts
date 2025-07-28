@@ -37,23 +37,23 @@ describe('reaction', () => {
 
         isDep1Ready.value = true;
         await iterateThrough();
-        expect(reactionFn).toHaveBeenCalledTimes(1);
+        expect(reactionFn).not.toHaveBeenCalled();
         expect(exitFn).not.toHaveBeenCalled();
 
         isDep2Ready.value = true;
         await iterateThrough();
-        expect(reactionFn).toHaveBeenCalledTimes(11);
+        expect(reactionFn).toHaveBeenCalledTimes(10);
         expect(exitFn).not.toHaveBeenCalled();
 
         isDep1Ready.value = false;
         await iterateThrough();
-        expect(reactionFn).toHaveBeenCalledTimes(12);
+        expect(reactionFn).toHaveBeenCalledTimes(11);
         expect(exitFn).not.toHaveBeenCalled();
 
         isDep1Ready.dispose();
         isDep1Ready.value = true;
         await delay();
-        expect(reactionFn).toHaveBeenCalledTimes(12);
+        expect(reactionFn).toHaveBeenCalledTimes(11);
         expect(exitFn).toHaveBeenCalledTimes(1);
     })
 })

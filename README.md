@@ -36,7 +36,6 @@ There is no any management of passed data for resolving.
 Returned promise is usual ES promise so it is impossible to fulfill promise twice.
 
 ### DependencyStream
-#### core
 Implementation of reactive model leveraging native JavaScript async features like
 Promises, (async) iterators and generators.
 The version is 0.0.x so keep it in mind
@@ -75,14 +74,17 @@ setInterval(() => {
 ##### reaction
 The most powerful util among all stream utils.
 Function is watching only for actual dependencies and does not react
-for dependencies that do not affect result value:
+for dependencies that do not affect result value. Since the reaction
+provides dependency instance, of course, there is a function result caching:
 ```typescript
 let isDep1Ready = new Dependency(false);
 let isDep2Ready = new Dependency(false);
 let counter = new Dependency(0);
 
-// function that implicityly uses dependency instances
-let cachedFunction = () => {
+// function that uses dependency instances
+let watchFn = () => {
+    // Take a look at IF condition -
+    // value can be changed only if dep1 and dep2 is ready
     if (isDep1Ready.value && isDep2Ready.value) {
         return counter.value;
     }
@@ -90,16 +92,12 @@ let cachedFunction = () => {
 }
 
 async function subscribe() {
-    for await (const value of reaction(cachedFunction)) {
+    for await (const value of reaction(watchFn)) {
         reactionFn();
     }
     exitFn();
 }
 ```
-The reaction is declared deprecated because a return value caching does not
-use optimal strategy. Moreover, ideally, reaction should give back a 
-dependency instance or something like it, that can provide an ability
-to be an observable for another reaction.
 
 #### Framework integrations
 ##### React
