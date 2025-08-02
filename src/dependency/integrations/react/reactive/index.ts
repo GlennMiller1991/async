@@ -2,7 +2,7 @@ import React, {ComponentProps, createElement, FunctionComponent, useEffect, useS
 import {observationState} from "../../../observe.state.ts";
 import {usePromise} from "./utils.ts";
 
-function Reactive(fn: FunctionComponent) {
+export function Reactive(fn: FunctionComponent) {
     return React.memo((props: ComponentProps<FunctionComponent>) => {
         const [key, setKey] = useState(Math.random());
 
