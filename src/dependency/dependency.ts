@@ -1,7 +1,7 @@
 import {IAllStreamConfig, IStreamIterator, IThisStreamConfig} from "./contracts.ts";
 import {PromiseConfiguration} from "../promise-configuration.ts";
 import {baseComparer} from "./utils.ts";
-import {collectDep} from "./global.ts";
+import {observationState} from "./observe.state.ts";
 import {symAI} from "../constants.ts";
 
 export class Dependency<T = any> {
@@ -34,7 +34,7 @@ export class Dependency<T = any> {
     }
 
     get value() {
-        collectDep(this);
+        observationState.setDep(this);
         return this._value;
     }
 

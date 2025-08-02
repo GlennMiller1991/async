@@ -1,6 +1,6 @@
 import {Dispatch, SetStateAction} from "react";
-import {isObjectsContentEqual} from "./utils.ts";
-import {IDepObjectArgument, IDepObjectReturn, raceStream} from "../../stream-utils/index.ts";
+import {isObjectsContentEqual} from "../utils.ts";
+import {IDepObjectArgument, IDepObjectReturn, raceStream} from "../../../stream-utils/index.ts";
 
 export class RaceStreamController<T extends IDepObjectArgument> {
     private _value!: IDepObjectReturn<T>;

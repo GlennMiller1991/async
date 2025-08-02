@@ -1,7 +1,7 @@
-import {runFnWithDepCollection} from "../global.ts";
-import {Dependency} from "../dependency.ts";
-import {symAI} from "../../constants.ts";
-import {IAllStreamConfig} from "../contracts.js";
+import {Dependency} from "../../dependency.ts";
+import {symAI} from "../../../constants.ts";
+import {IAllStreamConfig} from "../../contracts.ts";
+import {runFnWithDepCollection} from './utils.ts';
 
 export function reaction<T>(fn: () => T, config?: Partial<IAllStreamConfig<T>>) {
     let {result, deps} = runFnWithDepCollection(fn);
@@ -49,3 +49,4 @@ export function reaction<T>(fn: () => T, config?: Partial<IAllStreamConfig<T>>) 
 
     return dep;
 }
+

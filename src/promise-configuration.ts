@@ -1,8 +1,8 @@
 export class PromiseConfiguration<TReturn = void> {
     readonly promise!: Promise<TReturn>
-    _resolve!: (value: TReturn) => void;
-    _reject!: (value: Error) => void;
-    _isFulfilled: boolean = false;
+    private _resolve!: (value: TReturn) => void;
+    private _reject!: (value: Error) => void;
+    private _isFulfilled: boolean = false;
 
     constructor() {
         this.promise = new Promise<TReturn>((res, rej) => {

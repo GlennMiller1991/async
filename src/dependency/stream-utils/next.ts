@@ -1,5 +1,4 @@
 import {Dependency} from "../dependency.ts";
-import {symAI} from "../../constants.ts";
 import {PromiseConfiguration} from "../../promise-configuration.ts";
 
 /**
