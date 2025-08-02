@@ -35,13 +35,13 @@ type IPromiseConfiguration<T> = {
 There is no any management of passed data for resolving.
 Returned promise is usual ES promise so it is impossible to fulfill promise twice.
 
-### DependencyStream
+### Dependency
 Implementation of reactive model leveraging native JavaScript async features like
 Promises, (async) iterators and generators.
 The version is 0.0.x so keep it in mind
 
 ```typescript
-const counter = new DependencyStream<number>(0);
+const counter = new Dependency<number>(0);
 
 async function onCounterChange() {
     for await (let value of counter) {
@@ -101,14 +101,14 @@ async function subscribe() {
 
 #### Framework integrations
 ##### React
-Of course, there is a React integration via stream hooks.
+Of course, there is a React integration via stream hooks and HOCs.
 For example, here is classic react counter implementation via useRaceStream hook.
 
 ```typescript jsx
-type IController = {
+type ICounter = {
     dependecy: Dependency,
 }
-export const Counter: React.FC<ITest> = React.memo(({
+export const Counter: React.FC<ICounter> = React.memo(({
                                                         dependency,
                                                     }) => {
     // num is an instance of DependencyStream
@@ -121,20 +121,40 @@ export const Counter: React.FC<ITest> = React.memo(({
     return (
         <div className={"container"}>
             <button className={"incrementer"}
-                // Now result is array of streams values
-                // It should be object
                     onClick={() => dependency.value++}>
                 +
             </button>
 
             <div className={cn("display")}>
-                {
-                    // Now result is array of streams values
-                    // It should be object                    
-                }
                 {value.dependency}
             </div>
         </div>
     )
 })
 ```
+
+Or you can use Reaction HOC:
+```typescript jsx
+type ICounter = {
+    dependecy: Dependency,
+}
+export const Counter: React.FC<ICounter> = Reactive(({
+                                                        dependency,
+                                                    }) => {
+
+    return (
+        <div className={"container"}>
+            <button className={"incrementer"}
+                    onClick={() => dependency.value++}>
+                +
+            </button>
+
+            <div className={cn("display")}>
+                {value.dependency}
+            </div>
+        </div>
+    )
+})
+```
+
+###### 
