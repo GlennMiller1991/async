@@ -1,5 +1,5 @@
 export * from './dependency.ts';
 export * from './dependency.stream.ts';
 export * from './dep.factory.ts';
-export * from './stream-utils/index.ts';
-export * from './integrations/index.ts';
+export * from './vanilla/index.ts';
+export * from './react/index.ts'

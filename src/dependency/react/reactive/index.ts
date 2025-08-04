@@ -4,7 +4,7 @@ import React, {
     useEffect,
     useState
 } from "react";
-import {observationState} from "../../../observe.state.ts";
+import {observationState} from "../../observe.state.ts";
 import {usePromise} from "./utils.ts";
 
 export function Reactive<P extends object>(fn: FunctionComponent<P>): NamedExoticComponent<P> {

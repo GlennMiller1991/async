@@ -1,6 +1,6 @@
 import {delay, Dependency, DependencyStream} from "@src";
 import {IJestMockFn} from "@utils";
-import {getStream} from "../../../src/dependency/stream-utils/get.stream";
+import {getStream} from "../../../src/dependency/vanilla/get.stream";
 
 describe('DependencyStream', () => {
     type IStreamType = number;

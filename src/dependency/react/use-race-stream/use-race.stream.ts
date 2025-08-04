@@ -1,4 +1,4 @@
-import {IDepObjectArgument, IDepObjectReturn} from "../../../index.ts";
+import {IDepObjectArgument, IDepObjectReturn} from "../../index.ts";
 import {useEffect, useState} from "react";
 import {RaceStreamController} from "./race-stream.controller.ts";
 
