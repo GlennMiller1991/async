@@ -19,6 +19,19 @@ await delay(number);
 delay(number, 'sync');
 ```
 
+### debounce
+debounce is a function that passed function after waiting for the passed time
+without another function calls
+```typescript
+const myFunc = () => console.log('debounced running');
+const debounced = debounce(myFunc, 100);
+
+debounced();
+debounced();
+// after 100ms there will be only one console.log
+// debounced running
+```
+
 ### PromiseConfiguration
 PromiseConfiguration is a class that creates and provide promise, 
 its fulfillment functions and status flags.
@@ -133,7 +146,7 @@ export const Counter: React.FC<ICounter> = React.memo(({
 })
 ```
 
-Or you can use Reaction HOC:
+Or you can use Reactive HOC:
 ```typescript jsx
 type ICounter = {
     dependecy: Dependency,

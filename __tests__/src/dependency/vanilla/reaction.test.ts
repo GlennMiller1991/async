@@ -66,7 +66,6 @@ describe('reaction', () => {
         expect(reactionFn).toHaveBeenCalledTimes(11);
         expect(exitFn).toHaveBeenCalledTimes(1);
     });
-
     test('reaction should work once on changed in current task', async () => {
         subscribe();
 
@@ -89,7 +88,6 @@ describe('reaction', () => {
         isDep2Ready.dispose();
         counter.dispose();
     });
-
     test('reaction should be disposed on dispose all current deps', async () => {
         subscribe();
         expect(reactionDep.done).toBeFalsy();
@@ -98,7 +96,6 @@ describe('reaction', () => {
         await delay();
         expect(reactionDep.done).toBeTruthy();
     });
-
     test('reaction should not be disposed on dispose on of deps', async () => {
         subscribe();
 
