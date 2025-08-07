@@ -33,10 +33,11 @@
   },
   "author": "",
   "license": "ISC",
-  "dependencies": {
+  "peerDependencies": {
     "react": "^19.x.x"
   },
   "devDependencies": {
+    "react": "^19.x.x",
     "@types/jest": "^30.0.0",
     "@types/react": "^19.x.x",
     "jest": "^30.0.4",
