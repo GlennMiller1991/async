@@ -14,7 +14,9 @@ describe("delay", () => {
         const value = 10;
         const promise = delay(value);
         await promise;
-        expect(performance.now() - start).toBeGreaterThanOrEqual(value);
+        // all tested node versions in all tested OS periodically
+        // executes timeout callbacks earlier than expected
+        expect(performance.now() - start).toBeGreaterThanOrEqual(value - 1);
         expect(promise).toBeDefined();
     })
 })
