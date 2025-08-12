@@ -33,16 +33,16 @@
   },
   "author": "",
   "license": "ISC",
-  "peerDependencies": {
-    "react": "^19.x.x"
-  },
   "devDependencies": {
-    "react": "^19.x.x",
     "@types/jest": "^30.0.0",
     "@types/react": "^19.x.x",
     "jest": "^30.0.4",
+    "react": "^19.x.x",
     "ts-jest": "^29.4.0",
     "typescript": "^5.x.x"
+  },
+  "peerDependencies": {
+    "react": "^19.1.1"
   },
   "publishConfig": {
     "access": "public"

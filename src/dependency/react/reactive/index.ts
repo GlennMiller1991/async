@@ -1,14 +1,9 @@
-import React, {
-    FunctionComponent,
-    NamedExoticComponent,
-    useEffect,
-    useState
-} from "react";
+import {FunctionComponent, memo, NamedExoticComponent, useEffect, useState} from "react";
 import {observationState} from "../../observe.state.ts";
 import {usePromise} from "./utils.ts";
 
 export function Reactive<P extends object>(fn: FunctionComponent<P>): NamedExoticComponent<P> {
-    return React.memo((props) => {
+    return memo((props) => {
         const [key, setKey] = useState(false);
         const abortPromise = usePromise();
         useEffect(() => abortPromise.resolve, []);

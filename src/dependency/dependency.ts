@@ -38,6 +38,10 @@ export class Dependency<T = any> {
         return this._value;
     }
 
+    get value_unsafe() {
+        return this._value;
+    }
+
     get done() {
         return this.abortPromise.isFulfilled;
     }

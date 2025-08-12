@@ -5,6 +5,10 @@
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
     "stripInternal": true,
+    "baseUrl": ".",
+    "paths": {
+      "react": ["node_modules/react"],  // Пусть ищет React в проекте, а не в либе
+    }
   },
 }
 // @formatter:on
