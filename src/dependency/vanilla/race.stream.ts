@@ -9,7 +9,7 @@ export function raceStream<T extends IDepObjectArgument>(deps: T): IDependencySt
         .entries(deps)
         .reduce((acc, [key, dep]) => {
             acc[0].push(key);
-            acc[1].push(dep[symAI]({externalDispose}));
+            acc[1].push(dep[symAI]());
             return acc;
         }, [[] as string[], [] as IStreamIterator[]])
 
@@ -23,12 +23,20 @@ export function raceStream<T extends IDepObjectArgument>(deps: T): IDependencySt
             return isDisposed();
         },
         [symAI]() {
+            const done = {done: true} as { done: true, value: void };
             return {
                 next: async () => {
-                    const res = await Promise.race(streams.map(s => s.next()));
-                    if (res.done) {
-                        return res;
-                    }
+                    if (externalDispose.isFulfilled) return done;
+
+                    const res = await Promise.race([
+                        externalDispose.promise,
+                        ...streams.map(s => s.next())
+                    ]);
+
+                    if (externalDispose.isFulfilled) return done;
+                    externalDispose = new PromiseConfiguration();
+
+                    if (res.done) return res;
 
                     const value = keys.reduce((acc, key) => {
                         acc[key as keyof T] = deps[key as keyof T].value;

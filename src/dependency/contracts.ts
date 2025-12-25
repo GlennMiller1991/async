@@ -1,4 +1,3 @@
-import {PromiseConfiguration} from "../promise-configuration.js";
 import {Dependency} from "./dependency.ts";
 
 export interface IStreamIterator<TValue = any> {
@@ -35,9 +34,4 @@ export type IThisStreamConfig = Partial<{
      * stream dispose has priority over first reaction
      */
     withReactionOnSubscribe: boolean,
-    /**
-     * Dispose happens anyway right after current task,
-     * wherever value of dependency was changed
-     */
-    externalDispose: PromiseConfiguration<any>,
 }>

@@ -57,10 +57,6 @@ export class Dependency<T = any> {
             externalPromises.push(firstPromise.promise);
         }
 
-        if (thisStreamConfig.externalDispose) {
-            externalPromises.push(thisStreamConfig.externalDispose.promise);
-        }
-
         const owner = this;
         let done = false;
         return {
@@ -76,7 +72,7 @@ export class Dependency<T = any> {
                 ]);
 
 
-                if (this.done || thisStreamConfig.externalDispose?.isFulfilled) {
+                if (this.done) {
                     done = true;
                     return {done: true} as { done: true, value: void };
                 }
@@ -116,8 +112,8 @@ export class Dependency<T = any> {
      * Another subscribe for current race
      */
     async next() {
-         let race = this.getOrCreateRace();
-         await race;
+         await this.getOrCreateRace();
+
          this._race = undefined;
 
         if (this.done) {

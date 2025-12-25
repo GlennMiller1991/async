@@ -1,4 +1,4 @@
-import {delay, Dependency, PromiseConfiguration} from "@src";
+import {delay, Dependency} from "@src";
 import {IJestMockFn} from "@utils";
 
 describe('Dependency', () => {
@@ -226,67 +226,4 @@ describe('Dependency', () => {
             expect(reactionFn).toHaveBeenCalledTimes(qty);
             expect(exitFn).toHaveBeenCalledTimes(qty)
         });
-
-    test('External dispose should work', async () => {
-        const disposePromise = new PromiseConfiguration();
-        const iterator = counter[Symbol.asyncIterator]({
-            externalDispose: disposePromise,
-        })
-
-        async function subscribe() {
-            while (!(await iterator.next()).done) {
-                reactionFn();
-            }
-            exitFn();
-        }
-
-        subscribe();
-
-        let qty = 10;
-        for (let i = 0; i < qty; i++) {
-            counter.value++;
-            await delay();
-        }
-
-        disposePromise.resolve();
-        await delay();
-
-        expect(reactionFn).toHaveBeenCalledTimes(qty);
-        expect(exitFn).toHaveBeenCalledTimes(1);
-    });
-
-    test('External dispose should not cease work of other subscribers', async () => {
-        const disposePromise = new PromiseConfiguration();
-        const iterator = counter[Symbol.asyncIterator]({
-            externalDispose: disposePromise,
-        })
-
-        async function diposeSubscriber() {
-            while (!(await iterator.next()).done) {
-                reactionFn();
-            }
-            exitFn();
-        }
-
-        let subQty = 9;
-        diposeSubscriber();
-        for (let i = 0; i < subQty; i++) {
-            subscribe();
-        }
-
-        let qty = 10;
-        for (let i = 0; i < qty; i++) {
-            counter.value++;
-            await delay();
-        }
-
-        disposePromise.resolve();
-        await delay();
-        expect(reactionFn).toHaveBeenCalledTimes((subQty + 1) * qty);
-        expect(exitFn).toHaveBeenCalledTimes(1);
-
-        counter.dispose();
-        await delay();
-        expect(exitFn).toHaveBeenCalledTimes(subQty + 1);
-    });
 });

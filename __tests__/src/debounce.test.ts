@@ -1,5 +1,4 @@
-import {debounce} from "../../src/debounce";
-import {delay} from "@src";
+import {debounce, delay} from "@src";
 
 describe('debounce', () => {
     test('should work once', async () => {
