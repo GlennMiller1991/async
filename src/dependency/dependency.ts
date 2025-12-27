@@ -1,8 +1,8 @@
 import {IAllStreamConfig, IStreamIterator, IThisStreamConfig} from "./contracts.ts";
 import {PromiseConfiguration} from "../promise-configuration.ts";
 import {baseComparer} from "./utils.ts";
-import {observationState} from "./observe.state.ts";
 import {symAI} from "../constants.ts";
+import {observationState} from "./observe.state.ts";
 
 export class Dependency<T = any> {
     private reactionPromise: undefined | PromiseConfiguration<T>;
@@ -43,7 +43,7 @@ export class Dependency<T = any> {
     }
 
     get done() {
-        return this.abortPromise.isFulfilled;
+        return !this.abortPromise || this.abortPromise.isFulfilled;
     }
 
     [symAI](this: Dependency<T>, thisStreamConfig: IThisStreamConfig = {}): IStreamIterator<T> {
@@ -58,22 +58,19 @@ export class Dependency<T = any> {
         }
 
         const owner = this;
-        let done = false;
         return {
             owner,
-            dispose: owner.dispose.bind(owner),
+            dispose: () => {},
             get isDisposed() {
-                return done || owner.done;
+                return false;
             },
             next: async () => {
-                await Promise.race([
+                 await Promise.race([
+                     owner.next(),
                     ...externalPromises,
-                    owner.next(),
                 ]);
 
-
                 if (this.done) {
-                    done = true;
                     return {done: true} as { done: true, value: void };
                 }
 
@@ -97,6 +94,7 @@ export class Dependency<T = any> {
      * for all subscribers
      */
     private _race: Promise<void> | undefined;
+
     private getOrCreateRace() {
         if (!this._race) {
             this.reactionPromise = this.reactionPromise ?? new PromiseConfiguration();
@@ -112,28 +110,28 @@ export class Dependency<T = any> {
      * Another subscribe for current race
      */
     async next() {
-         await this.getOrCreateRace();
+        const done = {done: true} as { done: true, value: void };
+        const owner = this;
 
-         this._race = undefined;
+        if (this.done) return done;
+        await this.getOrCreateRace();
 
-        if (this.done) {
-            return {done: true} as {done: true, value?: never};
-        }
+        this._race = undefined;
+
+        if (this.done) return done;
+
+        this.abortPromise = new PromiseConfiguration();
 
         return {
             done: false,
             get value(): T {
-                return this.value
+                return owner.value;
             }
         }
     }
 
-    get disposePromise() {
-        return this.abortPromise.promise;
-    }
-
     dispose(this: Dependency<T>) {
-        this.abortPromise.resolve();
-        this.reactionPromise = undefined;
+        this.abortPromise?.resolve();
+        this.abortPromise = this.reactionPromise = undefined as any;
     }
 }

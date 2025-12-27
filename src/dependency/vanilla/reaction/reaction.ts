@@ -18,7 +18,7 @@ export function reaction<T>(fn: () => T, config?: Partial<IAllStreamConfig<T>>) 
 
                     beforeValues = depsArray.map(dep => dep.value_unsafe);
                     const promises = depsArray.map(dep => dep.next());
-                    promises.push(dep.disposePromise as Promise<any>);
+                    // promises.push(dep.disposePromise as Promise<any>);
 
                     await Promise.race(depsArray.map(dep => dep.next()));
                     if (dep.done) return {done: true};

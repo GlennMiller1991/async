@@ -1,4 +1,4 @@
-import {delay, Dependency} from "@src";
+import {delay, Dependency, PromiseConfiguration} from "@src";
 import {IJestMockFn} from "@utils";
 
 describe('Dependency', () => {
@@ -226,4 +226,148 @@ describe('Dependency', () => {
             expect(reactionFn).toHaveBeenCalledTimes(qty);
             expect(exitFn).toHaveBeenCalledTimes(qty)
         });
+
 });
+
+describe('Memory leaking tests', () => {
+    test('Dependency holds no links after disposing', async () => {
+        let dep = new Dependency(0);
+        let refs: Array<WeakRef<any>> = [];
+
+
+        async function watchDependency() {
+            for await (let _ of dep) {
+                let obj = {};
+                refs.push(new WeakRef(obj));
+            }
+        }
+
+        const completion = watchDependency();
+
+        expect(refs[0]).toBe(undefined);
+        dep.value++;
+
+        await delay();
+        expect(refs[0]).not.toBe(undefined);
+
+        // Jest holds object link so cause prevents it from being collected
+        // And there is no opportunity simultaneously to test and holding value before dispose and after it
+        // Here and in other tests
+        // expect(refs[0].deref()).not.toBe(undefined);
+
+        dep.dispose();
+
+        await completion;
+        gc();
+        await delay(100);
+
+        expect(refs[0].deref()).toBe(undefined);
+    });
+    test('Observing dependency in cycle happens like usual async cycle. Full completion', async () => {
+        let dep = new Dependency(0);
+        let dependencyRefs: Array<WeakRef<any>> = [];
+        let normalRefs: Array<WeakRef<any>> = [];
+
+
+        async function runWatchDependency() {
+            const completion = watchDependency();
+            for (let i = 0; i < 10; i++) {
+                await delay();
+                dep.value++;
+            }
+
+            await delay();
+            dep.dispose();
+
+            return completion;
+
+            async function watchDependency() {
+                for await (let _ of dep) {
+                    let obj = {};
+                    dependencyRefs.push(new WeakRef(obj));
+                }
+            }
+        }
+
+        async function normalAsyncCycle() {
+            for (let i = 0; i < 10; i++) {
+                await delay();
+                let obj = {};
+                normalRefs.push(new WeakRef(obj));
+            }
+        }
+
+        const normalCompletion = normalAsyncCycle();
+        const watchCompletion = runWatchDependency();
+
+        await Promise.all([normalCompletion, watchCompletion]);
+
+        gc();
+        await delay(100);
+
+        expect(dependencyRefs.length).toBe(normalRefs.length);
+        for (let i = 0; i < dependencyRefs.length; i++) {
+            expect(dependencyRefs[i].deref()).toBe(normalRefs[i].deref());
+        }
+
+
+    });
+    test('Observing dependency in cycle happens like usual async cycle. Partial completion', async () => {
+        let dep = new Dependency(0);
+        let dependencyRefs: Array<WeakRef<any>> = [];
+        let normalRefs: Array<WeakRef<any>> = [];
+
+
+        async function runWatchDependency() {
+            const completion = watchDependency();
+            for (let i = 0; i < 10; i++) {
+                await delay();
+                dep.value++;
+            }
+
+            // await delay();
+
+            delay(1000).then(() => dep.dispose());
+
+            return completion;
+
+            async function watchDependency() {
+                for await (let _ of dep) {
+                    let obj = {};
+                    dependencyRefs.push(new WeakRef(obj));
+                }
+            }
+        }
+
+        async function normalAsyncCycle() {
+            for (let i = 0; i < 10; i++) {
+                await delay();
+                let obj = {};
+                normalRefs.push(new WeakRef(obj));
+            }
+
+
+            await delay(1000);
+        }
+
+        const normalCompletion = normalAsyncCycle();
+        const watchCompletion = runWatchDependency();
+        const completion = Promise.all([normalCompletion, watchCompletion]);
+
+        await delay(500);
+        gc();
+        await delay(100);
+
+
+        // This tests working when no one promise have not been resolved yet
+        // More over, all planning iterations of cycles have already been completed, but
+        // resolving will happen approximately after 500ms or near
+        expect(dependencyRefs.length).toBe(normalRefs.length);
+        for (let i = 0; i < dependencyRefs.length; i++) {
+            expect(dependencyRefs[i].deref()).toEqual(normalRefs[i].deref());
+        }
+
+        await completion;
+
+    });
+})
