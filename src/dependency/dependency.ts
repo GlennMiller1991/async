@@ -48,21 +48,20 @@ export class Dependency<T = any> {
 
     [symAI](this: Dependency<T>, thisStreamConfig: IThisStreamConfig = {}): IStreamIterator<T> {
         const externalPromises: Promise<any>[] = [];
-        let firstPromise: PromiseConfiguration | undefined;
+        let firstPromise: Promise<void> | undefined;
         const withReactionOnSubscribe = this.config.withReactionOnSubscribe || thisStreamConfig.withReactionOnSubscribe;
 
         if (withReactionOnSubscribe) {
-            firstPromise = new PromiseConfiguration();
-            firstPromise.resolve();
-            externalPromises.push(firstPromise.promise);
+            firstPromise = Promise.resolve();
+            externalPromises.push(firstPromise);
         }
 
         const owner = this;
         return {
             owner,
-            dispose: () => {},
+            dispose: owner.dispose.bind(owner),
             get isDisposed() {
-                return false;
+                return owner.done;
             },
             next: async () => {
                  await Promise.race([
@@ -70,13 +69,13 @@ export class Dependency<T = any> {
                     ...externalPromises,
                 ]);
 
-                if (this.done) {
-                    return {done: true} as { done: true, value: void };
-                }
-
                 if (firstPromise) {
                     firstPromise = undefined;
                     externalPromises.pop();
+                }
+
+                if (this.done) {
+                    return {done: true} as { done: true, value: void };
                 }
 
                 return {
@@ -128,6 +127,10 @@ export class Dependency<T = any> {
                 return owner.value;
             }
         }
+    }
+
+    get disposePromise() {
+        return this.abortPromise?.promise ?? Promise.resolve();
     }
 
     dispose(this: Dependency<T>) {

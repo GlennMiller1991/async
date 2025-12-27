@@ -4,43 +4,60 @@ import {symAI} from "../constants.ts";
 import {Dependency} from "./dependency.ts";
 
 export class DependencyStream<T = any> implements IDependencyStream {
-    private selfDispose = new PromiseConfiguration();
+    private abortPromise = new PromiseConfiguration();
     private readonly iterator: IStreamIterator<T>;
 
     get isDisposed() {
         return this.iterator.isDisposed;
     }
 
+    get done() {
+        return this.owner.done || !this.abortPromise?.isPending;
+    }
+
     constructor(public readonly owner: Dependency) {
-        this.selfDispose = new PromiseConfiguration();
+        this.abortPromise = new PromiseConfiguration();
         this.iterator = owner[symAI]();
     }
 
     [symAI]() {
-        const done = {done: true} as {done: true, value: void};
+        const done = {done: true} as { done: true, value: void };
         return {
             next: async () => {
-                if (this.selfDispose.isFulfilled) return done;
+                if (this.done) {
+                    this.abort();
+                    return done;
+                }
 
                 const nextRes = this.iterator.next();
 
                 await Promise.race([
-                    this.selfDispose.promise,
+                    this.abortPromise.promise,
                     nextRes,
                 ]);
 
-                if (this.selfDispose.isFulfilled) return done;
+                if (this.done) {
+                    this.abort();
+                    return done;
+                }
 
-                this.selfDispose = new PromiseConfiguration();
+                this.abortPromise = new PromiseConfiguration();
 
                 return nextRes;
             }
         }
     }
 
+    protected abort() {
+        if (this.abortPromise?.isPending) {
+            this.abortPromise.resolve();
+            this.abortPromise = undefined as any;
+        }
+    }
+
     dispose() {
-        if (this.isDisposed) return;
-        this.selfDispose.resolve();
+        if (this.done) return;
+        this.abort();
     }
 
 

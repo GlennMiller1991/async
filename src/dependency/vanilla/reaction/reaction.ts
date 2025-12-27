@@ -18,9 +18,9 @@ export function reaction<T>(fn: () => T, config?: Partial<IAllStreamConfig<T>>) 
 
                     beforeValues = depsArray.map(dep => dep.value_unsafe);
                     const promises = depsArray.map(dep => dep.next());
-                    // promises.push(dep.disposePromise as Promise<any>);
+                    promises.push(dep.disposePromise as Promise<any>);
 
-                    await Promise.race(depsArray.map(dep => dep.next()));
+                    await Promise.race(promises);
                     if (dep.done) return {done: true};
 
                     let shouldRun = depsArray.some((dep, i) => dep.value_unsafe !== beforeValues[i]);
@@ -33,7 +33,7 @@ export function reaction<T>(fn: () => T, config?: Partial<IAllStreamConfig<T>>) 
                             if (dep.done) deps.delete(dep);
                         }
                         if (!deps.size) return {done: true} as {done: true, value?: never};
-                        return obj.next()
+                        return obj.next();
                     }
                 }
             }
@@ -44,6 +44,7 @@ export function reaction<T>(fn: () => T, config?: Partial<IAllStreamConfig<T>>) 
         for await (let value of stream) {
             dep.value = value;
         }
+
     }
 
     subscribe().then(() => dep.dispose());

@@ -1,6 +1,5 @@
-import {delay, Dependency, DependencyStream} from "@src";
+import {delay, Dependency, DependencyStream, DepFactory} from "@src";
 import {IJestMockFn} from "@utils";
-import {getStream} from "../../../src/dependency/vanilla/get.stream";
 
 describe('DependencyStream', () => {
     type IStreamType = number;
@@ -31,8 +30,8 @@ describe('DependencyStream', () => {
         exitFn = jest.fn();
     });
 
-    test('Dependency.getStream should work', async () => {
-        const stream = getStream(counter);
+    test('getStream should work', async () => {
+        const stream = DepFactory.ofDependency(counter);
         subscribe(stream);
 
         await iterateCounter();
@@ -45,7 +44,7 @@ describe('DependencyStream', () => {
     });
 
     test('Cannot subscribe after dispose', async () => {
-        const stream = getStream(counter);
+        const stream = DepFactory.ofDependency(counter);
         subscribe(stream);
 
         await iterateCounter();
