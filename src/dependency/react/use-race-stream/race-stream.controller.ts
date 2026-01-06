@@ -29,9 +29,11 @@ export class RaceStreamController<T extends IDepObjectArgument> {
 
         for await (let value of this.iterator) {
             this.rerenderTrigger?.(prev => !prev);
-            if (!this.isFirstWas && !isObjectsContentEqual(this._value, value)) {
+            if (!this.isFirstWas || !isObjectsContentEqual(this._value, value)) {
                 this._value = value
             }
+
+
             this.isFirstWas = true;
         }
     }
