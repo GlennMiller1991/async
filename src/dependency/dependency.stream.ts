@@ -55,11 +55,6 @@ export class DependencyStream<T = any> implements IDependencyStream {
                     ...externalPromises,
                 ]);
 
-                if (firstPromise) {
-                    firstPromise = undefined;
-                    externalPromises.pop();
-                }
-
                 if (this.done) {
                     this.abort();
                     return done;
@@ -67,6 +62,11 @@ export class DependencyStream<T = any> implements IDependencyStream {
 
                 this.abortPromise = new PromiseConfiguration();
 
+                if (firstPromise) {
+                    firstPromise = undefined;
+                    externalPromises.pop();
+                    return {done: false, value: this.owner.value}
+                }
                 return nextRes;
             }
         }
