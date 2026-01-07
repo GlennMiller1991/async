@@ -2,7 +2,7 @@ import {PromiseConfiguration} from "../promise-configuration.ts";
 import {IAllStreamConfig, IDependencyStream, IStreamIterator} from "./contracts.ts";
 import {symAI} from "../constants.ts";
 import {Dependency} from "./dependency.ts";
-import {baseComparer} from "./utils.js";
+import {baseComparer} from "./utils.ts";
 
 export class DependencyStream<T = any> implements IDependencyStream {
     private abortPromise = new PromiseConfiguration();
